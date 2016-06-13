@@ -1,0 +1,15 @@
+<package>
+  <name>cladplus</name>
+  <version>0.1.0</version>
+  <description>
+    This package provides cladplus packages.
+  </description>
+  <maintainer email="vpanadeiro@aimen.es">Verónica Panadeiro Castro</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
