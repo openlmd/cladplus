@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 import os
 import sys
-import time
-import datetime
+import rospy
+import rospkg
 import numpy as np
-import matplotlib
+
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib  import gridspec
 from matplotlib.lines import Line2D
-from PyQt4 import QtCore, QtGui, uic
-import rospy
-from collections import deque
+
+from python_qt_binding import loadUi
+from python_qt_binding import QtGui
+from python_qt_binding import QtCore
+
 from mashes_measures.msg import MsgGeometry
 from mashes_control.msg import MsgPower
 
@@ -31,64 +33,65 @@ class Filter():
         return y
 
 
-class AlasPlot(QtGui.QWidget):
+class QtPlot(QtGui.QWidget):
     def __init__(self, parent=None):
-        super(AlasPlot, self).__init__(parent)
-        self.time_first = 0
-        self.time_first_p = 0
+        super(QtPlot, self).__init__(parent)
 
-        self.fig = Figure(figsize=(9, 6), dpi=72, facecolor=(0.76, 0.78, 0.8), edgecolor=(0.1, 0.1, 0.1), linewidth=2)
+        self.fig = Figure(figsize=(9, 6), dpi=72, facecolor=(0.76, 0.78, 0.8),
+                          edgecolor=(0.1, 0.1, 0.1), linewidth=2)
         self.canvas = FigureCanvas(self.fig)
         gs = gridspec.GridSpec(5, 1)
         self.plot1_axis1 = self.fig.add_subplot(gs[0:2, 0])
         self.plot1_axis1.get_yaxis().set_ticklabels([])
         self.plot2_axis1 = self.fig.add_subplot(gs[3:5, 0])
 
-        self.tmrMeasures = QtCore.QTimer(self)
-        self.tmrMeasures.timeout.connect(self.timeMeasuresEvent)
-        self.tmrMeasures.start(100)
-
-
-        rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
-        rospy.Subscriber('/control/power', MsgPower, self.power_fn)
-
         layout = QtGui.QHBoxLayout()
         self.setLayout(layout)
         layout.addWidget(self.canvas)
 
-        self.PIX_SCALE = 31
-        self.min_meas, self.max_meas = 0 / self.PIX_SCALE, 500 / self.PIX_SCALE
+        self.tmrMeasures = QtCore.QTimer(self)
+        self.tmrMeasures.timeout.connect(self.timeMeasuresEvent)
+        self.tmrMeasures.start(100)
+
+        rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
+        rospy.Subscriber('/control/power', MsgPower, self.power_fn)
+
+        self.min_meas, self.max_meas = 0, 5
         self.min_power, self.max_power = 0, 2000
 
+        self.time = 0
         self.distance = 0
         self.distance_p = 0
         self.duration = 10
         self.reset_data()
 
-        self.line_mwidth = Line2D(self.wid_x, self.mwidth, color='b', linewidth=2, animated=True)
-        self.text_mwidth = self.plot1_axis1.text(self.duration-10, 0, '',  size=13, ha='right', va='center', backgroundcolor='w', color='b', animated=True)
+        self.line_width = Line2D(
+            self.wtime, self.width, color='b', linewidth=2, animated=True)
+        self.text_width = self.plot1_axis1.text(
+            self.duration-10, 0, '', size=13, ha='right', va='center',
+            backgroundcolor='w', color='b', animated=True)
 
         self.plot2_axis1.set_ylim(self.min_power, self.max_power)
-        self.line_power = Line2D(self.power_x, self.power, color='r', linewidth=2, animated=True)
-        self.text_power = self.plot2_axis1.text(self.duration-10, 0, '',  size=13, ha='right', va='center', backgroundcolor='w', color='r', animated=True)
+        self.line_power = Line2D(
+            self.ptime, self.power, color='r', linewidth=2, animated=True)
+        self.text_power = self.plot2_axis1.text(
+            self.duration-10, 0, '', size=13, ha='right', va='center',
+            backgroundcolor='w', color='r', animated=True)
         self.draw_figure()
 
-
     def reset_data(self):
-        self.str_data = ''
-        self.mwidth = np.array([])
+        self.width = np.array([])
+        self.wtime = np.array([])
+        self.width_filter = Filter()
         self.power = np.array([])
-        self.power_x = np.array([])
-        self.wid_x = np.array([])
-
-        self.mwidth_filter = Filter()
+        self.ptime = np.array([])
         self.power_filter = Filter()
 
     def draw_figure(self):
         self.plot1_axis1.cla()
         self.plot1_axis1.set_title('Melt Pool Measures')
 
-        self.plot1_axis1.add_line(self.line_mwidth)
+        self.plot1_axis1.add_line(self.line_width)
         self.plot1_axis1.set_xlim(0, self.duration)
         self.plot1_axis1.set_ylabel('Measures (mm)')
         self.plot1_axis1.set_xlabel('Time (s)')
@@ -123,67 +126,60 @@ class AlasPlot(QtGui.QWidget):
         return value
 
     def measures(self, msg_geometry):
-        if self.time_first == 0:
-            self.time_first = msg_geometry.header.stamp.to_sec()
-
-        if msg_geometry.header.stamp.to_sec()-self.time_first > self.duration:
-            self.distance = msg_geometry.header.stamp.to_sec()-self.time_first-self.duration
-
-        self.wid_x = np.append(self.wid_x, msg_geometry.header.stamp.to_sec()-self.time_first)
-        self.mwidth = np.append(self.mwidth, msg_geometry.minor_axis)
-
-        self.line_mwidth.set_data(self.wid_x-self.distance, self.mwidth)
-        if len(self.wid_x) > 2:
-            steps = self.wid_x[-1]-self.wid_x[-2]
+        time = msg_geometry.header.stamp.to_sec()
+        if self.time == 0 or self.time > time:
+            self.time = time
+            self.reset_data()
+        if time-self.time > self.duration:
+            self.distance = time-self.time-self.duration
+        self.wtime = np.append(self.wtime, time-self.time)
+        self.width = np.append(self.width, msg_geometry.minor_axis)
+        self.line_width.set_data(self.wtime-self.distance, self.width)
+        if len(self.wtime) > 2:
             # Melt pool measures filtered value
-            mwidth_mean = np.round(self.mwidth_filter.update(self.mwidth[-1], steps), 1)
-            self.text_mwidth.set_text('%.1f' % mwidth_mean)
-            mwidth_mean = self._limited_range(mwidth_mean, self.min_meas + 20. / self.PIX_SCALE, self.max_meas -  20. / self.PIX_SCALE)
-            self.text_mwidth.set_y(mwidth_mean)
-            self.text_mwidth.set_x(self.duration-0.1*(self.duration))
-
+            width_mean = np.round(self.width_filter.update(
+                self.width[-1], self.wtime[-1]), 1)
+            self.text_width.set_text('%.1f' % width_mean)
+            width_mean = self._limited_range(width_mean, 0.5, 4.5)
+            self.text_width.set_y(width_mean)
+            self.text_width.set_x(0.98 * self.duration)
 
     def power_fn(self, msg_power):
-        if self.time_first_p == 0:
-            self.time_first_p = msg_power.header.stamp.to_sec()
-
-        if msg_power.header.stamp.to_sec()-self.time_first_p > self.duration:
-            self.distance_p = msg_power.header.stamp.to_sec()-self.time_first_p-self.duration
-
-        self.power_x = np.append(self.power_x, msg_power.header.stamp.to_sec()-self.time_first_p)
+        time = msg_power.header.stamp.to_sec()
+        if self.time == 0 or self.time > time:
+            self.time = time
+            self.reset_data()
+        if time-self.time > self.duration:
+            self.distance_p = time-self.time-self.duration
+        self.ptime = np.append(self.ptime, time-self.time)
         self.power = np.append(self.power, msg_power.value)
-        self.line_power.set_data(self.power_x - self.distance_p, self.power)
-        if len(self.power_x) > 2:
-            steps = self.power_x[-1]-self.power_x[-2]
-            # print 'steps power:', steps
-            power_mean = np.round(self.power_filter.update(self.power[-1], steps), 0)
+        self.line_power.set_data(self.ptime - self.distance_p, self.power)
+        if len(self.ptime) > 2:
+            power_mean = np.round(
+                self.power_filter.update(self.power[-1], self.ptime[-1]), 0)
             self.text_power.set_text('%.0f W' % power_mean)
-            power_mean = self._limited_range(power_mean, self.min_power + 30. / self.PIX_SCALE, self.max_power - 30. / self.PIX_SCALE)
+            power_mean = self._limited_range(power_mean, 100, 1900)
             self.text_power.set_y(power_mean)
-            self.text_power.set_x(self.duration-0.1*(self.duration))
+            self.text_power.set_x(0.98 * self.duration)
 
-    def time_event(self):
+    def timeMeasuresEvent(self):
         if self.figbackground == None or self.background1 == None or self.background2 == None:
             self.draw_figure()
         self.canvas.restore_region(self.figbackground)
-
         self.canvas.restore_region(self.background1)
-        self.plot1_axis1.draw_artist(self.line_mwidth)
-        self.plot1_axis1.draw_artist(self.text_mwidth)
+        self.plot1_axis1.draw_artist(self.line_width)
+        self.plot1_axis1.draw_artist(self.text_width)
         self.canvas.blit(self.plot1_axis1.bbox)
         self.canvas.restore_region(self.background2)
-
         self.plot2_axis1.draw_artist(self.line_power)
         self.plot2_axis1.draw_artist(self.text_power)
         self.canvas.blit(self.plot2_axis1.bbox)
 
-    def timeMeasuresEvent(self):
-        self.time_event()
-
 
 if __name__ == "__main__":
     rospy.init_node('data_plot')
+
     app = QtGui.QApplication(sys.argv)
-    alasPlot = AlasPlot()
-    alasPlot.show()
+    qt_plot = QtPlot()
+    qt_plot.show()
     app.exec_()
