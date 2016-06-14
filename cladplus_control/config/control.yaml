@@ -1,0 +1,2 @@
+parameters: {Kd: 0.0, Ki: 100.0, Kp: 10.0}
+power: {max: 1500, min: 0}
