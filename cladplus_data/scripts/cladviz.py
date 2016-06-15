@@ -7,12 +7,14 @@ from python_qt_binding import loadUi
 from python_qt_binding import QtGui
 from python_qt_binding import QtCore
 
+import rviz
+
 import numpy as np
 from mashes_measures.msg import MsgStatus
 
 from qt_plot import QtPlot
 from qt_control import QtControl
-
+from viewer import QDisplay
 
 path = rospkg.RosPack().get_path('cladplus_data')
 
@@ -23,6 +25,7 @@ class CladViz(QtGui.QMainWindow):
         loadUi(os.path.join(path, 'resources', 'cladviz.ui'), self)
 
         self.boxPlot.addWidget(QtPlot())
+        self.vl_display.addWidget(QDisplay())
 
         self.qtControl = QtControl()
         self.tabWidget.addTab(self.qtControl, 'Control')

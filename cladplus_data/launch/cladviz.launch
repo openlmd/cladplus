@@ -1,5 +1,6 @@
 <launch>
     <arg name="sim" default="false"/>
+    <arg name="gui" default="true" />
 
     <include file="$(find mashes_tachyon)/launch/tachyon.launch" unless="$(arg sim)">
         <arg name="gui" value="$(arg gui)"/>

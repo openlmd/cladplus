@@ -21,7 +21,7 @@ from python_qt_binding import QtCore
 MANUAL = 0
 AUTOMATIC = 1
 STEP = 2
-path = rospkg.RosPack().get_path('mashes_control')
+path = rospkg.RosPack().get_path('cladplus_control')
 
 
 class QtControl(QtGui.QWidget):

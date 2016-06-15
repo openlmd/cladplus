@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>500</height>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,7 +82,7 @@ color: rgb(255, 255, 255);</string>
    <item>
     <widget class="QTabWidget" name="tbParams">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -95,6 +95,29 @@ color: rgb(255, 255, 255);</string>
           <widget class="QLabel" name="lblWidth">
            <property name="text">
             <string> Width:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="sbWidth">
+           <property name="suffix">
+            <string> mm</string>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>3.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lblKd">
+           <property name="text">
+            <string> Kd:</string>
            </property>
           </widget>
          </item>
@@ -115,29 +138,6 @@ color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="sbWidth">
-           <property name="suffix">
-            <string> mm</string>
-           </property>
-           <property name="decimals">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <double>10.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>3.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="lblKi">
-           <property name="text">
-            <string> Ki: </string>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="sbKi">
            <property name="maximum">
@@ -148,32 +148,19 @@ color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lblKi">
+           <property name="text">
+            <string> Ki: </string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QLabel" name="lblKp">
            <property name="text">
             <string> Kp: </string>
            </property>
           </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="lblKd">
-           <property name="text">
-            <string> Kd:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <spacer name="verticalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
