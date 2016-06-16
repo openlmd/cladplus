@@ -38,20 +38,10 @@ class QtControl(QtGui.QWidget):
         self.pub_control = rospy.Publisher(
             '/control/parameters', MsgControl, queue_size=10)
 
-        self.pub_calibrate = rospy.Publisher(
-            '/tachyon/calibrate', MsgCalibrate, queue_size=10)
-        self.pub_step = rospy.Publisher(
-            '/control/step', MsgStep, queue_size=10)
-
         self.mode = MANUAL
         self.msg_mode = MsgMode()
-        self.msg_power = MsgPower()
         self.msg_control = MsgControl()
-        self.msg_step = MsgStep()
-
         self.msg_calibrate = MsgCalibrate()
-
-        self.btnControlClicked()
 
         self.minor_axis = 0
         self.major_axis = 0
@@ -63,11 +53,50 @@ class QtControl(QtGui.QWidget):
             '/control/power', MsgPower, self.cb_power, queue_size=1)
 
         self.btnModeClicked()
-        self.btnControlClicked()
 
         self.tmrInfo = QtCore.QTimer(self)
         self.tmrInfo.timeout.connect(self.tmrInfoEvent)
         self.tmrInfo.start(100)
+
+        self.setParameters(rospy.get_param('/control/parameters'))
+        self.setStepParameters(rospy.get_param('/control/step'))
+        self.setManualParameters(rospy.get_param('/control/manual'))
+        self.setAutoParameters(rospy.get_param('/control/automatic'))
+        self.btnControlClicked()
+
+    def setParameters(self, params):
+        self.sbKp.setValue(params['Kp'])
+        self.sbKi.setValue(params['Ki'])
+        self.sbKd.setValue(params['Kd'])
+
+    def getParameters(self):
+        params = {'Kd': self.sbKd.value(),
+                  'Ki': self.sbKi.value(),
+                  'Kp': self.sbKp.value()}
+        return params
+
+    def setStepParameters(self, params):
+        self.sbPower_2.setValue(params['power'])
+        self.sbTime.setValue(params['trigger'])
+
+    def getStepParameters(self):
+        params = {'power': self.sbPower_2.value(),
+                  'trigger': self.sbTime.value()}
+        return params
+
+    def setManualParameters(self, params):
+        self.sbPower.setValue(params['power'])
+
+    def getManualParameters(self):
+        params = {'power': self.sbPower.value()}
+        return params
+
+    def setAutoParameters(self, params):
+        self.sbWidth.setValue(params['width'])
+
+    def getAutoParameters(self):
+        params = {'width': self.sbWidth.value()}
+        return params
 
     def btnModeClicked(self):
         if self.btnMode.currentText() == "Manual":
@@ -93,16 +122,20 @@ class QtControl(QtGui.QWidget):
         self.pub_mode.publish(self.msg_mode)
 
     def btnControlClicked(self):
-        self.msg_control.power = self.sbPower.value()
-        self.msg_control.setpoint = self.sbWidth.value()
-        self.msg_control.kp = self.sbKp.value()
-        self.msg_control.ki = self.sbKi.value()
-        self.msg_control.kd = self.sbKd.value()
-        self.msg_step.trigger = self.sbTime.value()
-        self.msg_step.power = self.sbPower_2.value()
-        self.pub_control.publish(self.msg_control)
-        self.pub_step.publish(self.msg_step)
+        param = self.getParameters()
+        rospy.set_param('/control/parameters', param)
 
+        step = self.getStepParameters()
+        rospy.set_param('/control/step', step)
+
+        manual = self.getManualParameters()
+        rospy.set_param('/control/manual', manual)
+
+        auto = self.getAutoParameters()
+        rospy.set_param('/control/automatic', auto)
+
+        self.msg_control.change = True
+        self.pub_control.publish(self.msg_control)
 
     def btnCalibrateClicked(self):
         self.msg_calibrate.calibrate = 1
