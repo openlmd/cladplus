@@ -24,6 +24,7 @@ class QDisplay(QtGui.QWidget):
         layout = QtGui.QVBoxLayout()
         layout.setContentsMargins(1, 1, 1, 1)
         self.setLayout(layout)
+        self.setMaximumSize(300, 300)
 
         self.lblCamera = QtGui.QLabel()
         self.lblCamera.setStyleSheet(DISPLAY_STYLE_SHEET)
@@ -36,6 +37,7 @@ class QDisplay(QtGui.QWidget):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.timeoutRunning)
         self.timer.start(20)
+        self.first_data = False
 
         image_topic = rospy.get_param('~image', '/tachyon/image')
         rospy.Subscriber(image_topic, Image, self.cb_image, queue_size=1)
@@ -54,28 +56,32 @@ class QDisplay(QtGui.QWidget):
         self.image = image
 
     def paintFrame(self, image):
-        height, width, channels = image.shape
-        image = QtGui.QImage(image.tostring(), width, height,
-                             channels * width, QtGui.QImage.Format_RGB888)
-        painter = QtGui.QPainter()
-        pixmap = self.pixmap.scaled(self.lblCamera.size(),
-                                    QtCore.Qt.KeepAspectRatio)
-        painter = QtGui.QPainter()
-        self.pixmap.convertFromImage(image)
-        painter.begin(self.pixmap)
-        painter.setWindow(0, 0, 320, 320)
-        painter.end()
-        self.lblCamera.setPixmap(pixmap)
+        if self.first_data:
+                height, width, channels = image.shape
+                image = QtGui.QImage(image.tostring(), width, height,
+                                     channels * width, QtGui.QImage.Format_RGB888)
+                painter = QtGui.QPainter()
+                pixmap = self.pixmap.scaled(self.lblCamera.size(),
+                                            QtCore.Qt.KeepAspectRatio)
+                painter = QtGui.QPainter()
+                self.pixmap.convertFromImage(image)
+                painter.begin(self.pixmap)
+                painter.setWindow(0, 0, 32, 32)
+                painter.end()
+                self.lblCamera.setPixmap(pixmap)
 
     def timeoutRunning(self):
         self.paintFrame(self.image)
 
     def cb_image(self, msg_image):
         try:
+            if not self.first_data:
+                self.first_data = True
             frame = self.bridge.imgmsg_to_cv2(msg_image)
             self.updateFrame(frame)
         except CvBridgeError, e:
             print e
+
 
 if __name__ == '__main__':
     rospy.init_node('visualize')
