@@ -12,12 +12,10 @@ class NdLabjack():
 
         power_min = rospy.get_param('~power_min', 0)
         power_max = rospy.get_param('~power_max', 1500)
-
         laser_percent = rospy.get_param('~laser_percent', 100)
 
         self.labjack = LabJack()
         self.labjack.power_factor(power_min, power_max)
-
         self.line_power(laser_percent)
 
         rospy.Subscriber("/control/power", MsgPower, self.cb_power)

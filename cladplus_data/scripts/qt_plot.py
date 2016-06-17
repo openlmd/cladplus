@@ -1,18 +1,15 @@
 #!/usr/bin/env python
-import os
 import sys
 import rospy
-import rospkg
 import numpy as np
+
+from python_qt_binding import QtGui
+from python_qt_binding import QtCore
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib  import gridspec
 from matplotlib.lines import Line2D
-
-from python_qt_binding import loadUi
-from python_qt_binding import QtGui
-from python_qt_binding import QtCore
 
 from mashes_measures.msg import MsgGeometry
 from cladplus_control.msg import MsgPower
@@ -62,7 +59,8 @@ class QtPlot(QtGui.QWidget):
         self.time = 0
         self.distance = 0
         self.distance_p = 0
-        self.duration = 10
+        self.duration = 6
+        self.buff_max = self.duration * 500
         self.reset_data()
 
         self.line_width = Line2D(
@@ -135,6 +133,8 @@ class QtPlot(QtGui.QWidget):
         self.wtime = np.append(self.wtime, time-self.time)
         self.width = np.append(self.width, msg_geometry.minor_axis)
         self.line_width.set_data(self.wtime-self.distance, self.width)
+        if len(self.width) > self.buff_max:
+            self.mea_buffers()
         if len(self.wtime) > 2:
             # Melt pool measures filtered value
             width_mean = np.round(self.width_filter.update(
@@ -154,6 +154,8 @@ class QtPlot(QtGui.QWidget):
         self.ptime = np.append(self.ptime, time-self.time)
         self.power = np.append(self.power, msg_power.value)
         self.line_power.set_data(self.ptime - self.distance_p, self.power)
+        if len(self.power) > self.buff_max:
+            self.pow_buffers()
         if len(self.ptime) > 2:
             power_mean = np.round(
                 self.power_filter.update(self.power[-1], self.ptime[-1]), 0)
@@ -174,6 +176,14 @@ class QtPlot(QtGui.QWidget):
         self.plot2_axis1.draw_artist(self.line_power)
         self.plot2_axis1.draw_artist(self.text_power)
         self.canvas.blit(self.plot2_axis1.bbox)
+
+    def mea_buffers(self):
+        self.wtime = self.wtime[1:]
+        self.width = self.width[1:]
+
+    def pow_buffers(self):
+        self.ptime = self.ptime[1:]
+        self.power = self.power[1:]
 
 
 if __name__ == "__main__":

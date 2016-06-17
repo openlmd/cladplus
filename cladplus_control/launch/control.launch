@@ -2,7 +2,9 @@
   <arg name="gui" default="true" />
   <arg name="sim" default="false" />
 
-  <include file="$(find mashes_measures)/launch/measures.launch" unless="$(arg sim)">
+  <rosparam command="load" file="$(find cladplus_control)/config/control.yaml" />
+
+  <include file="$(find mashes_measures)/launch/measures.launch">
     <arg name="gui" value="$(arg gui)" />
   </include>
 
