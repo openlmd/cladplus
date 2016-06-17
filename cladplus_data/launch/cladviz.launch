@@ -6,7 +6,7 @@
         <arg name="gui" value="$(arg gui)"/>
     </include>
 
-    <include file="$(find mashes_control)/launch/control.launch">
+    <include file="$(find cladplus_control)/launch/control.launch">
         <arg name="gui" value="false"/>
     </include>
 

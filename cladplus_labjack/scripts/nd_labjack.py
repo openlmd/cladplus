@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 
-from mashes_control.msg import MsgPower
+from cladplus_control.msg import MsgPower
 
 from labjack.labjack import LabJack
 

@@ -15,7 +15,7 @@ from python_qt_binding import QtGui
 from python_qt_binding import QtCore
 
 from mashes_measures.msg import MsgGeometry
-from mashes_control.msg import MsgPower
+from cladplus_control.msg import MsgPower
 
 
 class Filter():

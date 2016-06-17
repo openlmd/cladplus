@@ -18,7 +18,6 @@ from control.control import PID
 MANUAL = 0
 STEP = 2
 AUTOMATIC = 1
-path = rospkg.RosPack().get_path('mashes_control')
 
 
 class NdControl():
@@ -57,6 +56,7 @@ class NdControl():
         self.first_step = True
 
         self.control = Control()
+        path = rospkg.RosPack().get_path('cladplus_control')
         self.control.load_conf(os.path.join(path, 'config/control.yaml'))
         self.control.pid.set_limits(power_min, power_max)
         self.control.pid.set_setpoint(self.setpoint)
