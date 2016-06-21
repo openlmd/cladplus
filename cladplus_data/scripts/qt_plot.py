@@ -8,7 +8,7 @@ from python_qt_binding import QtCore
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib  import gridspec
+from matplotlib import gridspec
 from matplotlib.lines import Line2D
 
 from mashes_measures.msg import MsgGeometry
@@ -33,7 +33,6 @@ class Filter():
 class QtPlot(QtGui.QWidget):
     def __init__(self, parent=None):
         super(QtPlot, self).__init__(parent)
-
         self.fig = Figure(figsize=(9, 6), dpi=72, facecolor=(0.76, 0.78, 0.8),
                           edgecolor=(0.1, 0.1, 0.1), linewidth=2)
         self.canvas = FigureCanvas(self.fig)
@@ -46,9 +45,6 @@ class QtPlot(QtGui.QWidget):
         self.setLayout(layout)
         layout.addWidget(self.canvas)
 
-        self.tmrMeasures = QtCore.QTimer(self)
-        self.tmrMeasures.timeout.connect(self.timeMeasuresEvent)
-        self.tmrMeasures.start(100)
 
         rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
         rospy.Subscriber('/control/power', MsgPower, self.power_fn)
@@ -78,11 +74,11 @@ class QtPlot(QtGui.QWidget):
         self.draw_figure()
 
     def reset_data(self):
-        self.width = np.array([])
-        self.wtime = np.array([])
+        self.width = []
+        self.wtime = []
         self.width_filter = Filter()
-        self.power = np.array([])
-        self.ptime = np.array([])
+        self.power = []
+        self.ptime = []
         self.power_filter = Filter()
 
     def draw_figure(self):
@@ -130,9 +126,9 @@ class QtPlot(QtGui.QWidget):
             self.reset_data()
         if time-self.time > self.duration:
             self.distance = time-self.time-self.duration
-        self.wtime = np.append(self.wtime, time-self.time)
-        self.width = np.append(self.width, msg_geometry.minor_axis)
-        self.line_width.set_data(self.wtime-self.distance, self.width)
+        self.wtime.append(time-self.time)
+        self.width.append(msg_geometry.minor_axis)
+        self.line_width.set_data(np.array(self.wtime)-self.distance, self.width)
         if len(self.width) > self.buff_max:
             self.mea_buffers()
         if len(self.wtime) > 2:
@@ -151,9 +147,9 @@ class QtPlot(QtGui.QWidget):
             self.reset_data()
         if time-self.time > self.duration:
             self.distance_p = time-self.time-self.duration
-        self.ptime = np.append(self.ptime, time-self.time)
-        self.power = np.append(self.power, msg_power.value)
-        self.line_power.set_data(self.ptime - self.distance_p, self.power)
+        self.ptime.append(time-self.time)
+        self.power.append(msg_power.value)
+        self.line_power.set_data(np.array(self.ptime)-self.distance_p, self.power)
         if len(self.power) > self.buff_max:
             self.pow_buffers()
         if len(self.ptime) > 2:
@@ -178,18 +174,21 @@ class QtPlot(QtGui.QWidget):
         self.canvas.blit(self.plot2_axis1.bbox)
 
     def mea_buffers(self):
-        self.wtime = self.wtime[1:]
-        self.width = self.width[1:]
+        self.wtime = self.wtime[-(self.buff_max-1):]
+        self.width = self.width[-(self.buff_max-1):]
+
 
     def pow_buffers(self):
-        self.ptime = self.ptime[1:]
-        self.power = self.power[1:]
+        self.ptime = self.ptime[-(self.buff_max-1):]
+        self.power = self.power[-(self.buff_max-1):]
 
 
 if __name__ == "__main__":
     rospy.init_node('data_plot')
-
     app = QtGui.QApplication(sys.argv)
     qt_plot = QtPlot()
+    tmrMeasures = QtCore.QTimer()
+    tmrMeasures.timeout.connect(qt_plot.timeMeasuresEvent)
+    tmrMeasures.start(100)
     qt_plot.show()
     app.exec_()

@@ -20,16 +20,26 @@ class CladViz(QtGui.QMainWindow):
         path = rospkg.RosPack().get_path('cladplus_data')
         loadUi(os.path.join(path, 'resources', 'cladviz.ui'), self)
 
-        self.boxPlot.addWidget(QtPlot())
-        self.vl_display.addWidget(QtDisplay())
+        self.qt_plot = QtPlot()
+        self.qt_display = QtDisplay()
+        self.boxPlot.addWidget(self.qt_plot)
+        self.vl_display.addWidget(self.qt_display)
 
         self.qtControl = QtControl()
         self.tabWidget.addTab(self.qtControl, 'Control')
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.timeoutRunning)
+        self.timer.start(100)
 
         self.btnQuit.clicked.connect(self.btnQuitClicked)
 
         rospy.Subscriber(
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
+
+    def timeoutRunning(self):
+        self.qt_display.timeoutRunning()
+        self.qt_plot.timeMeasuresEvent()
 
     def cb_status(self, msg_status):
         txt_status = ''
