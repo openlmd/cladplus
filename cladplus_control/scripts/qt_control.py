@@ -7,11 +7,9 @@ import rospkg
 from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
-from cladplus_control.msg import MsgStep
-
-from mashes_measures.msg import MsgGeometry
 
 from mashes_tachyon.msg import MsgCalibrate
+from mashes_measures.msg import MsgGeometry
 
 from python_qt_binding import loadUi
 from python_qt_binding import QtGui
@@ -37,6 +35,8 @@ class QtControl(QtGui.QWidget):
             '/control/mode', MsgMode, queue_size=10)
         self.pub_control = rospy.Publisher(
             '/control/parameters', MsgControl, queue_size=10)
+        self.pub_calibrate = rospy.Publisher(
+            '/tachyon/calibrate', MsgCalibrate, queue_size=10)
 
         self.mode = MANUAL
         self.msg_mode = MsgMode()
