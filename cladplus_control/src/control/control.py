@@ -2,7 +2,6 @@
 import yaml
 import numpy as np
 
-
 class Control():
     def __init__(self):
         self.pid = PID()
@@ -10,11 +9,11 @@ class Control():
     def load_conf(self, filename):
         with open(filename, 'r') as f:
             data = yaml.load(f)
-        Kp = data['parameters']['Kp']
-        Ki = data['parameters']['Ki']
-        Kd = data['parameters']['Kd']
-        pwr_min = data['power']['min']
-        pwr_max = data['power']['max']
+        Kp = data['/control/parameters']['Kp']
+        Ki = data['/control/parameters']['Ki']
+        Kd = data['/control/parameters']['Kd']
+        pwr_min = data['/control/power']['min']
+        pwr_max = data['/control/power']['max']
         self.pid.set_parameters(Kp, Ki, Kd)
         self.pid.set_limits(pwr_min, pwr_max)
         return data

@@ -32,9 +32,6 @@ class QtDisplay(QtGui.QWidget):
         self.lblCamera.mousePressEvent = self.mousePressEvent
         layout.addWidget(self.lblCamera)
 
-        # self.timer = QtCore.QTimer(self)
-        # self.timer.timeout.connect(self.timeoutRunning)
-        # self.timer.start(20)
 
         image_topic = rospy.get_param('~image', '/tachyon/image')
         rospy.Subscriber(image_topic, Image, self.cb_image, queue_size=1)
@@ -75,8 +72,7 @@ class QtDisplay(QtGui.QWidget):
 
 if __name__ == '__main__':
     rospy.init_node('display')
-
-    # img = cv2.imread('/home/panadeiro/catkin_ws/src/cladplus/cladplus_data/scripts/visualize/indice.jpeg')
+    # img = cv2.imread('indice.jpeg')
     app = QtGui.QApplication(sys.argv)
     qt_display = QtDisplay()
 
