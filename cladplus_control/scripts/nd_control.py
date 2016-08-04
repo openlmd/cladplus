@@ -7,6 +7,7 @@ from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
 from mashes_measures.msg import MsgGeometry
+from mashes_measures.msg import MsgStatus
 
 from control.control import Control
 from control.control import PID
@@ -26,6 +27,8 @@ class NdControl():
             '/control/mode', MsgMode, self.cb_mode, queue_size=1)
         rospy.Subscriber(
             '/control/parameters', MsgControl, self.cb_control, queue_size=1)
+        rospy.Subscriber(
+            '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
 
         self.pub_power = rospy.Publisher(
             '/control/power', MsgPower, queue_size=10)
@@ -33,6 +36,8 @@ class NdControl():
         self.msg_power = MsgPower()
         self.mode = MANUAL
 
+        self.status = False
+        self.time_step = None
         self.control = Control()
         self.updateParameters()
 
@@ -72,14 +77,18 @@ class NdControl():
     def cb_mode(self, msg_mode):
         self.mode = msg_mode.value
         rospy.loginfo('Mode: ' + str(self.mode))
-        if self.mode == 2:
-            self.time_step = 0
 
     def cb_control(self, msg_control):
         self.updateParameters()
         rospy.loginfo(rospy.get_param('/control/manual'))
         rospy.loginfo(rospy.get_param('/control/step'))
         self.control.pid.set_setpoint(self.setpoint)
+
+    def cb_status(self, msg_status):
+        print msg_status.laser_on, self.status, self.time_step
+        if msg_status.laser_on and not self.status:
+             self.time_step = 0
+	self.status = msg_status.laser_on
 
     def cb_geometry(self, msg_geo):
         stamp = msg_geo.header.stamp
@@ -93,12 +102,12 @@ class NdControl():
             else:
                 value = self.control.pid.power(self.power)
         elif self.mode == STEP:
-            if self.time_step == 0:
-                self.time_step = stamp.to_sec()
-            if time - self.time_step > self.trigger:
+	    if self.time_step == 0:
+                self.time_step = time
+            if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
                 value = self.power_step
             else:
-                value = 0
+                value = self.power
         else:
             major_axis = msg_geo.major_axis
             if major_axis:
@@ -107,7 +116,7 @@ class NdControl():
                 value = self.control.pid.power(self.power)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
-        print '# Timestamp', time, '# Power', self.msg_power.value
+        #print '# Timestamp', time, '# Power', self.msg_power.value, self.time_step
         self.pub_power.publish(self.msg_power)
 
 if __name__ == '__main__':
