@@ -15,6 +15,7 @@ from control.control import PID
 MANUAL = 0
 STEP = 2
 AUTOMATIC = 1
+RAMP = 3
 
 
 class NdControl():
@@ -29,7 +30,6 @@ class NdControl():
             '/control/parameters', MsgControl, self.cb_control, queue_size=1)
         rospy.Subscriber(
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
-
         self.pub_power = rospy.Publisher(
             '/control/power', MsgPower, queue_size=10)
 
@@ -40,6 +40,9 @@ class NdControl():
         self.time_step = None
         self.control = Control()
         self.updateParameters()
+
+        self.ramp_time = 0
+        self.ramp_count = 0
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -67,27 +70,37 @@ class NdControl():
     def setStepParameters(self, params):
         self.power_step = params['power']
         self.trigger = params['trigger']
+        
+    def setRampParameters(self, params):
+        self.ramp_min = params['initial']
+        self.ramp_max = params['final']
+        self.ramp_step = params['step']
+        self.ramp_t_time = params['t_time']
 
     def updateParameters(self):
         self.setParameters(rospy.get_param('/control/parameters'))
         self.setStepParameters(rospy.get_param('/control/step'))
         self.setManualParameters(rospy.get_param('/control/manual'))
         self.setAutoParameters(rospy.get_param('/control/automatic'))
+        self.setRampParameters(rospy.get_param('/control/ramp'))
 
     def cb_mode(self, msg_mode):
         self.mode = msg_mode.value
         rospy.loginfo('Mode: ' + str(self.mode))
+        print self.mode
 
     def cb_control(self, msg_control):
         self.updateParameters()
         rospy.loginfo(rospy.get_param('/control/manual'))
-        rospy.loginfo(rospy.get_param('/control/step'))
+        # rospy.loginfo(rospy.get_param('/control/step'))
+        rospy.loginfo(rospy.get_param('/control/ramp'))
         self.control.pid.set_setpoint(self.setpoint)
 
     def cb_status(self, msg_status):
-        print msg_status.laser_on, self.status, self.time_step
+        # print msg_status.laser_on, self.status, self.time_step
         if msg_status.laser_on and not self.status:
              self.time_step = 0
+             self.ramp_time = 0
 	self.status = msg_status.laser_on
 
     def cb_geometry(self, msg_geo):
@@ -101,8 +114,19 @@ class NdControl():
                 value = self.control.pid.update(minor_axis, time)
             else:
                 value = self.control.pid.power(self.power)
+        elif self.mode == RAMP:
+            if self.ramp_time == 0:
+                self.ramp_time = time
+                steps = (self.ramp_max - self.ramp_min)/self.ramp_step
+                self.ramp_step_time = self.ramp_t_time / steps
+                self.ramp_count = self.ramp_min
+            if self.status and time - self.ramp_time > self.ramp_step_time and self.ramp_count < self.ramp_max:
+                self.ramp_time = time
+                self.ramp_count = self.ramp_count + self.ramp_step
+            value = self.ramp_count
+
         elif self.mode == STEP:
-	    if self.time_step == 0:
+            if self.time_step == 0:
                 self.time_step = time
             if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
                 value = self.power_step
@@ -116,7 +140,7 @@ class NdControl():
                 value = self.control.pid.power(self.power)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
-        #print '# Timestamp', time, '# Power', self.msg_power.value, self.time_step
+        # print '# Timestamp', time, '# Power', self.msg_power.value, self.time_step
         self.pub_power.publish(self.msg_power)
 
 if __name__ == '__main__':
