@@ -45,7 +45,6 @@ class QtPlot(QtGui.QWidget):
         self.setLayout(layout)
         layout.addWidget(self.canvas)
 
-
         rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
         rospy.Subscriber('/control/power', MsgPower, self.power_fn)
 
@@ -163,15 +162,21 @@ class QtPlot(QtGui.QWidget):
     def timeMeasuresEvent(self):
         if self.figbackground == None or self.background1 == None or self.background2 == None:
             self.draw_figure()
-        self.canvas.restore_region(self.figbackground)
-        self.canvas.restore_region(self.background1)
-        self.plot1_axis1.draw_artist(self.line_width)
-        self.plot1_axis1.draw_artist(self.text_width)
-        self.canvas.blit(self.plot1_axis1.bbox)
-        self.canvas.restore_region(self.background2)
-        self.plot2_axis1.draw_artist(self.line_power)
-        self.plot2_axis1.draw_artist(self.text_power)
-        self.canvas.blit(self.plot2_axis1.bbox)
+        try:
+            self.canvas.restore_region(self.figbackground)
+            self.canvas.restore_region(self.background1)
+            self.plot1_axis1.draw_artist(self.line_width)
+            self.plot1_axis1.draw_artist(self.text_width)
+        except:
+            pass
+        try:
+            self.canvas.blit(self.plot1_axis1.bbox)
+            self.canvas.restore_region(self.background2)
+            self.plot2_axis1.draw_artist(self.line_power)
+            self.plot2_axis1.draw_artist(self.text_power)
+            self.canvas.blit(self.plot2_axis1.bbox)
+        except:
+            pass
 
     def mea_buffers(self):
         self.wtime = self.wtime[-(self.buff_max-1):]
