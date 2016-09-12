@@ -19,6 +19,7 @@ from python_qt_binding import QtCore
 MANUAL = 0
 AUTOMATIC = 1
 STEP = 2
+RAMP = 3
 path = rospkg.RosPack().get_path('cladplus_control')
 
 
@@ -117,6 +118,12 @@ class QtControl(QtGui.QWidget):
                 "background-color: rgb(0, 255, 0); color: rgb(255, 255, 255);")
             self.mode = STEP
             self.tbParams.setCurrentIndex(2)
+        elif self.btnMode.currentText() == "Ramp":
+            self.lblStatus.setText("Ramp")
+            self.lblStatus.setStyleSheet(
+                "background-color: rgb(0, 128, 0); color: rgb(255, 255, 255);")
+            self.mode = RAMP
+            self.tbParams.setCurrentIndex(3)
 
         self.msg_mode.value = self.mode
         self.pub_mode.publish(self.msg_mode)

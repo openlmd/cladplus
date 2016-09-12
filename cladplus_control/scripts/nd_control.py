@@ -15,7 +15,7 @@ from control.control import PID
 MANUAL = 0
 STEP = 2
 AUTOMATIC = 1
-
+RAMP = 3
 
 class NdControl():
     def __init__(self):
@@ -40,6 +40,13 @@ class NdControl():
         self.time_step = None
         self.control = Control()
         self.updateParameters()
+
+        self.ramp_time = 0
+        self.ramp_step = 100
+        self.ramp_max = 1500
+        self.ramp_min = 500
+        self.ramp_count = 0
+
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -85,9 +92,10 @@ class NdControl():
         self.control.pid.set_setpoint(self.setpoint)
 
     def cb_status(self, msg_status):
-        print msg_status.laser_on, self.status, self.time_step
+        #print msg_status.laser_on, self.status, self.time_step
         if msg_status.laser_on and not self.status:
              self.time_step = 0
+             self.ramp_time = 0
 	self.status = msg_status.laser_on
 
     def cb_geometry(self, msg_geo):
@@ -101,6 +109,16 @@ class NdControl():
                 value = self.control.pid.update(minor_axis, time)
             else:
                 value = self.control.pid.power(self.power)
+        elif self.mode == RAMP:
+            if self.ramp_time == 0:
+                self.ramp_time = time
+                self.ramp_count = self.ramp_min
+            if self.status and time - self.ramp_time > 1  and self.ramp_count < self.ramp_max:
+                self.ramp_time = time
+                self.ramp_count = self.ramp_count + self.ramp_step
+                print self.ramp_count
+            value = self.ramp_count
+
         elif self.mode == STEP:
 	    if self.time_step == 0:
                 self.time_step = time
@@ -108,6 +126,7 @@ class NdControl():
                 value = self.power_step
             else:
                 value = self.power
+
         else:
             major_axis = msg_geo.major_axis
             if major_axis:
