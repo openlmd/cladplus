@@ -63,6 +63,7 @@ class QtControl(QtGui.QWidget):
         self.setStepParameters(rospy.get_param('/control/step'))
         self.setManualParameters(rospy.get_param('/control/manual'))
         self.setAutoParameters(rospy.get_param('/control/automatic'))
+        self.setRampParameters(rospy.get_param('/control/ramp'))
         self.btnControlClicked()
 
     def setParameters(self, params):
@@ -85,6 +86,19 @@ class QtControl(QtGui.QWidget):
                   'trigger': self.sbTime.value()}
         return params
 
+    def setRampParameters(self, params):
+        self.sbPower_3.setValue(params['initial'])
+        self.sbPower_5.setValue(params['final'])
+        self.sbPower_4.setValue(params['step'])
+        self.sbTime_2.setValue(params['t_time'])
+
+    def getRampParameters(self):
+        params = {'initial': self.sbPower_3.value(),
+                  'final': self.sbPower_5.value(),
+                  'step': self.sbPower_4.value(),
+                  't_time': self.sbTime_2.value()}
+        return params
+
     def setManualParameters(self, params):
         self.sbPower.setValue(params['power'])
 
@@ -103,7 +117,7 @@ class QtControl(QtGui.QWidget):
         if self.btnMode.currentText() == "Manual":
             self.lblStatus.setText("Manual")
             self.lblStatus.setStyleSheet(
-                "background-color: rgb(255, 255, 0); color: rgb(0, 0, 0);")
+                "background-color: rgb(255, 220, 0); color: rgb(0, 0, 0);")
             self.mode = MANUAL
             self.tbParams.setCurrentIndex(1)
         elif self.btnMode.currentText() == "Automatic":
@@ -115,7 +129,7 @@ class QtControl(QtGui.QWidget):
         elif self.btnMode.currentText() == "Step":
             self.lblStatus.setText("Step")
             self.lblStatus.setStyleSheet(
-                "background-color: rgb(0, 255, 0); color: rgb(255, 255, 255);")
+                "background-color: rgb(128, 0, 128); color: rgb(255, 255, 255);")
             self.mode = STEP
             self.tbParams.setCurrentIndex(2)
         elif self.btnMode.currentText() == "Ramp":
@@ -141,6 +155,9 @@ class QtControl(QtGui.QWidget):
         auto = self.getAutoParameters()
         rospy.set_param('/control/automatic', auto)
 
+        ramp = self.getRampParameters()
+        rospy.set_param('/control/ramp', ramp)
+
         self.msg_control.change = True
         self.pub_control.publish(self.msg_control)
 
@@ -163,7 +180,6 @@ class QtControl(QtGui.QWidget):
 
 if __name__ == '__main__':
     rospy.init_node('control_panel')
-
     app = QtGui.QApplication(sys.argv)
     qt_control = QtControl()
     qt_control.show()
