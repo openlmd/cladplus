@@ -70,7 +70,7 @@ class NdControl():
     def setStepParameters(self, params):
         self.power_step = params['power']
         self.trigger = params['trigger']
-        
+
     def setRampParameters(self, params):
         self.ramp_min = params['initial']
         self.ramp_max = params['final']
@@ -132,6 +132,7 @@ class NdControl():
                 value = self.power_step
             else:
                 value = self.power
+
         else:
             major_axis = msg_geo.major_axis
             if major_axis:
