@@ -15,7 +15,6 @@ from control.control import PID
 MANUAL = 0
 STEP = 2
 AUTOMATIC = 1
-RAMP = 3
 
 
 class NdControl():
@@ -40,9 +39,6 @@ class NdControl():
         self.time_step = None
         self.control = Control()
         self.updateParameters()
-
-        self.ramp_time = 0
-        self.ramp_count = 0
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -71,18 +67,11 @@ class NdControl():
         self.power_step = params['power']
         self.trigger = params['trigger']
 
-    def setRampParameters(self, params):
-        self.ramp_min = params['initial']
-        self.ramp_max = params['final']
-        self.ramp_step = params['step']
-        self.ramp_t_time = params['t_time']
-
     def updateParameters(self):
         self.setParameters(rospy.get_param('/control/parameters'))
         self.setStepParameters(rospy.get_param('/control/step'))
         self.setManualParameters(rospy.get_param('/control/manual'))
         self.setAutoParameters(rospy.get_param('/control/automatic'))
-        self.setRampParameters(rospy.get_param('/control/ramp'))
 
     def cb_mode(self, msg_mode):
         self.mode = msg_mode.value
@@ -91,58 +80,55 @@ class NdControl():
 
     def cb_control(self, msg_control):
         self.updateParameters()
-        rospy.loginfo(rospy.get_param('/control/manual'))
+        # rospy.loginfo(rospy.get_param('/control/manual'))
         # rospy.loginfo(rospy.get_param('/control/step'))
-        rospy.loginfo(rospy.get_param('/control/ramp'))
         self.control.pid.set_setpoint(self.setpoint)
 
     def cb_status(self, msg_status):
+        self.status = msg_status.laser_on
+        self.power_ant = msg_status.power
         # print msg_status.laser_on, self.status, self.time_step
         if msg_status.laser_on and not self.status:
-             self.time_step = 0
-             self.ramp_time = 0
-	self.status = msg_status.laser_on
+                self.time_step = 0
 
     def cb_geometry(self, msg_geo):
         stamp = msg_geo.header.stamp
         time = stamp.to_sec()
         if self.mode == MANUAL:
-            value = self.control.pid.power(self.power)
+            value = self.manual(self.power)
         elif self.mode == AUTOMATIC:
-            minor_axis = msg_geo.minor_axis
-            if minor_axis > 0.5:
-                value = self.control.pid.update(minor_axis, time)
-            else:
-                value = self.control.pid.power(self.power)
-        elif self.mode == RAMP:
-            if self.ramp_time == 0:
-                self.ramp_time = time
-                steps = (self.ramp_max - self.ramp_min)/self.ramp_step
-                self.ramp_step_time = self.ramp_t_time / steps
-                self.ramp_count = self.ramp_min
-            if self.status and time - self.ramp_time > self.ramp_step_time and self.ramp_count < self.ramp_max:
-                self.ramp_time = time
-                self.ramp_count = self.ramp_count + self.ramp_step
-            value = self.ramp_count
-
+            value = self.automatic(msg_geo.minor_axis, time)
         elif self.mode == STEP:
-            if self.time_step == 0:
-                self.time_step = time
-            if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
-                value = self.power_step
-            else:
-                value = self.power
-
-        else:
-            major_axis = msg_geo.major_axis
-            if major_axis:
-                value = self.control.pid.update(major_axis, time)
-            else:
-                value = self.control.pid.power(self.power)
+            value = self.step(time)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
+        rospy.set_param('/process/power', value)
         # print '# Timestamp', time, '# Power', self.msg_power.value, self.time_step
         self.pub_power.publish(self.msg_power)
+
+    def manual(self, power):
+        value = self.control.pid.power(power)
+        print value
+        return value
+
+    def automatic(self, minor_axis, time):
+        if minor_axis > 4.8:
+            value = 0
+        elif minor_axis > 0.5:
+            value = self.control.pid.update(minor_axis, time)
+        else:
+            value = self.control.pid.power(self.power)
+        return value
+
+    def step(self, time):
+        if self.time_step == 0:
+            self.time_step = time
+        if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
+            value = self.power_step
+        else:
+            value = self.power
+        return value
+
 
 if __name__ == '__main__':
     try:

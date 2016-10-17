@@ -2,6 +2,7 @@
 import yaml
 import numpy as np
 
+
 class Control():
     def __init__(self):
         self.pid = PID()

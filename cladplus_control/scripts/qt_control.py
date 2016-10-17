@@ -19,7 +19,6 @@ from python_qt_binding import QtCore
 MANUAL = 0
 AUTOMATIC = 1
 STEP = 2
-RAMP = 3
 path = rospkg.RosPack().get_path('cladplus_control')
 
 
@@ -63,7 +62,6 @@ class QtControl(QtGui.QWidget):
         self.setStepParameters(rospy.get_param('/control/step'))
         self.setManualParameters(rospy.get_param('/control/manual'))
         self.setAutoParameters(rospy.get_param('/control/automatic'))
-        self.setRampParameters(rospy.get_param('/control/ramp'))
         self.btnControlClicked()
 
     def setParameters(self, params):
@@ -84,19 +82,6 @@ class QtControl(QtGui.QWidget):
     def getStepParameters(self):
         params = {'power': self.sbPower_2.value(),
                   'trigger': self.sbTime.value()}
-        return params
-
-    def setRampParameters(self, params):
-        self.sbPower_3.setValue(params['initial'])
-        self.sbPower_5.setValue(params['final'])
-        self.sbPower_4.setValue(params['step'])
-        self.sbTime_2.setValue(params['t_time'])
-
-    def getRampParameters(self):
-        params = {'initial': self.sbPower_3.value(),
-                  'final': self.sbPower_5.value(),
-                  'step': self.sbPower_4.value(),
-                  't_time': self.sbTime_2.value()}
         return params
 
     def setManualParameters(self, params):
@@ -132,12 +117,6 @@ class QtControl(QtGui.QWidget):
                 "background-color: rgb(128, 0, 128); color: rgb(255, 255, 255);")
             self.mode = STEP
             self.tbParams.setCurrentIndex(2)
-        elif self.btnMode.currentText() == "Ramp":
-            self.lblStatus.setText("Ramp")
-            self.lblStatus.setStyleSheet(
-                "background-color: rgb(0, 128, 0); color: rgb(255, 255, 255);")
-            self.mode = RAMP
-            self.tbParams.setCurrentIndex(3)
 
         self.msg_mode.value = self.mode
         self.pub_mode.publish(self.msg_mode)
@@ -154,9 +133,6 @@ class QtControl(QtGui.QWidget):
 
         auto = self.getAutoParameters()
         rospy.set_param('/control/automatic', auto)
-
-        ramp = self.getRampParameters()
-        rospy.set_param('/control/ramp', ramp)
 
         self.msg_control.change = True
         self.pub_control.publish(self.msg_control)
