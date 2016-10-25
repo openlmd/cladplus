@@ -36,80 +36,118 @@ class QtPlot(QtGui.QWidget):
         self.fig = Figure(figsize=(9, 6), dpi=72, facecolor=(0.76, 0.78, 0.8),
                           edgecolor=(0.1, 0.1, 0.1), linewidth=2)
         self.canvas = FigureCanvas(self.fig)
+        pos1 = [0, 2]
+        pos2 = [3, 5]
         gs = gridspec.GridSpec(5, 1)
-        self.plot1_axis1 = self.fig.add_subplot(gs[0:2, 0])
-        self.plot1_axis1.get_yaxis().set_ticklabels([])
-        self.plot2_axis1 = self.fig.add_subplot(gs[3:5, 0])
+        self.width = Graph(gs, pos1, self.fig, 'b', self.canvas)
+        self.width.plot.get_yaxis().set_ticklabels([])
+        self.power = Graph(gs, pos2, self.fig, 'r', self.canvas)
+
+        self.plot_def()
+
+        rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
+        rospy.Subscriber('/control/power', MsgPower, self.power_fn)
 
         layout = QtGui.QHBoxLayout()
         self.setLayout(layout)
         layout.addWidget(self.canvas)
 
-        rospy.Subscriber('/tachyon/geometry', MsgGeometry, self.measures)
-        rospy.Subscriber('/control/power', MsgPower, self.power_fn)
+    def plot_def(self):
+        self.width.min = 0
+        self.width.max = 5
+        self.width.plot_title = 'Melt pool measures'
+        self.width.yunits_title = 'Width(mm)'
+        self.width.xunits_title = 'Time(s)'
 
-        self.min_meas, self.max_meas = 0, 5
-        self.min_power, self.max_power = 0, 2000
+        self.width.draw_figure()
 
-        self.time = 0
+        self.width.max_mea = 4.5
+        self.width.min_mea = 0.5
+        self.width.t = 1
+        self.width.color = 'b'
+
+        self.power.max_mea = 1900
+        self.power.min_mea = 100
+        self.power.color = 'r'
+
+        self.power.min = 0
+        self.power.max = 2000
+        self.power.plot_title = 'Power'
+        self.power.yunits_title = 'Power(W)'
+        self.power.xunits_title = 'Time(s)'
+
+        self.power.draw_figure()
+
+    def measures(self, msg_geometry):
+        time = msg_geometry.header.stamp.to_sec()
+        dato = msg_geometry.minor_axis
+        self.width.update_data(time, dato)
+
+    def power_fn(self, msg_power):
+        time = msg_power.header.stamp.to_sec()
+        dato = msg_power.value
+        self.power.update_data(time, dato)
+
+    def timeMeasuresEvent(self):
+        self.width.timeEvent()
+        self.power.timeEvent()
+
+    def resizeEvent(self, event):
+        self.width.figbackground = None
+        self.width.background = None
+        self.power.background = None
+
+
+class Graph():
+    def __init__(self, gs, pos, fig, col, canvas, parent=None):
+        self.first = 0
+        self.time_ant = 0
         self.distance = 0
-        self.distance_p = 0
         self.duration = 6
         self.buff_max = self.duration * 500
+        self.min = 0
+        self.max = 1000
+        self.max_mea = 100
+        self.min_mea = 1900
+        self.color = col
+        self.t = 1
+        self.canvas = canvas
+        self.fig = fig
+        self.plot = self.fig.add_subplot(gs[pos[0]:pos[1], 0])
+
         self.reset_data()
 
-        self.line_width = Line2D(
-            self.wtime, self.width, color='b', linewidth=2, animated=True)
-        self.text_width = self.plot1_axis1.text(
+        self.line = Line2D(
+            self.time, self.data, color=self.color, linewidth=2, animated=True)
+        self.text = self.plot.text(
             self.duration-10, 0, '', size=13, ha='right', va='center',
-            backgroundcolor='w', color='b', animated=True)
+            backgroundcolor='w', color=self.color, animated=True)
 
-        self.plot2_axis1.set_ylim(self.min_power, self.max_power)
-        self.line_power = Line2D(
-            self.ptime, self.power, color='r', linewidth=2, animated=True)
-        self.text_power = self.plot2_axis1.text(
-            self.duration-10, 0, '', size=13, ha='right', va='center',
-            backgroundcolor='w', color='r', animated=True)
+        self.plot_title = 'Graph title'
+        self.yunits_title = 'Y Units ()'
+        self.xunits_title = 'X Units()'
         self.draw_figure()
 
     def reset_data(self):
-        self.width = []
-        self.wtime = []
-        self.width_filter = Filter()
-        self.power = []
-        self.ptime = []
-        self.power_filter = Filter()
+        self.data = []
+        self.time = []
+        self.filter = Filter()
 
     def draw_figure(self):
-        self.plot1_axis1.cla()
-        self.plot1_axis1.set_title('Melt Pool Measures')
+        self.plot.cla()
+        self.plot.set_title(self.plot_title)
 
-        self.plot1_axis1.add_line(self.line_width)
-        self.plot1_axis1.set_xlim(0, self.duration)
-        self.plot1_axis1.set_ylabel('Measures (mm)')
-        self.plot1_axis1.set_xlabel('Time (s)')
-        self.plot1_axis1.set_ylim(self.min_meas, self.max_meas)
-        self.plot1_axis1.grid(True)
-
-        self.plot2_axis1.set_title('Power')
-        # self.plot2_axis1.get_xaxis().set_ticklabels([])
-        self.plot2_axis1.set_xlabel('Time (s)')
-        self.plot2_axis1.set_xlim(0, self.duration)
-        self.plot2_axis1.add_line(self.line_power)
-        self.plot2_axis1.set_ylabel('Power (W)')
-        self.plot2_axis1.set_ylim(self.min_power, self.max_power)
-        self.plot2_axis1.grid(True)
+        self.plot.add_line(self.line)
+        self.plot.set_xlim(0, self.duration)
+        self.plot.set_ylabel(self.yunits_title)
+        self.plot.set_xlabel(self.xunits_title)
+        self.plot.set_ylim(self.min, self.max)
+        self.plot.grid(True)
 
         self.canvas.draw()
 
         self.figbackground = self.canvas.copy_from_bbox(self.fig.bbox)
-        self.background1 = self.canvas.copy_from_bbox(self.plot1_axis1.bbox)
-        self.background2 = self.canvas.copy_from_bbox(self.plot2_axis1.bbox)
-
-    def resizeEvent(self, event):
-        self.figbackground = None
-        self.background1 = None
-        self.background2 = None
+        self.background = self.canvas.copy_from_bbox(self.plot.bbox)
 
     def _limited_range(self, value, min_value, max_value):
         if value < min_value:
@@ -118,75 +156,47 @@ class QtPlot(QtGui.QWidget):
             value = max_value
         return value
 
-    def measures(self, msg_geometry):
-        time = msg_geometry.header.stamp.to_sec()
-        if self.time == 0 or self.time > time:
-            self.time = time
-            self.reset_data()
-        if time-self.time > self.duration:
-            self.distance = time-self.time-self.duration
-        self.wtime.append(time-self.time)
-        self.width.append(msg_geometry.minor_axis)
-        self.line_width.set_data(np.array(self.wtime)-self.distance, self.width)
-        if len(self.width) > self.buff_max:
-            self.mea_buffers()
-        if len(self.wtime) > 2:
-            # Melt pool measures filtered value
-            width_mean = np.round(self.width_filter.update(
-                self.width[-1], self.wtime[-1]), 1)
-            self.text_width.set_text('%.1f' % width_mean)
-            width_mean = self._limited_range(width_mean, 0.5, 4.5)
-            self.text_width.set_y(width_mean)
-            self.text_width.set_x(0.98 * self.duration)
+    def resize(self):
+        self.figbackground = None
+        self.background = None
 
-    def power_fn(self, msg_power):
-        time = msg_power.header.stamp.to_sec()
-        if self.time == 0 or self.time > time:
-            self.time = time
-            self.reset_data()
-        if time-self.time > self.duration:
-            self.distance_p = time-self.time-self.duration
-        self.ptime.append(time-self.time)
-        self.power.append(msg_power.value)
-        self.line_power.set_data(np.array(self.ptime)-self.distance_p, self.power)
-        if len(self.power) > self.buff_max:
-            self.pow_buffers()
-        if len(self.ptime) > 2:
-            power_mean = np.round(
-                self.power_filter.update(self.power[-1], self.ptime[-1]), 0)
-            self.text_power.set_text('%.0f W' % power_mean)
-            power_mean = self._limited_range(power_mean, 100, 1900)
-            self.text_power.set_y(power_mean)
-            self.text_power.set_x(0.98 * self.duration)
-
-    def timeMeasuresEvent(self):
-        if self.figbackground == None or self.background1 == None or self.background2 == None:
+    def timeEvent(self):
+        if self.figbackground is None or self.background is None:
             self.draw_figure()
         try:
             self.canvas.restore_region(self.figbackground)
-            self.canvas.restore_region(self.background1)
-            self.plot1_axis1.draw_artist(self.line_width)
-            self.plot1_axis1.draw_artist(self.text_width)
-        except:
-            pass
-        try:
-            self.canvas.blit(self.plot1_axis1.bbox)
-            self.canvas.restore_region(self.background2)
-            self.plot2_axis1.draw_artist(self.line_power)
-            self.plot2_axis1.draw_artist(self.text_power)
-            self.canvas.blit(self.plot2_axis1.bbox)
+            self.canvas.restore_region(self.background)
+            self.plot.draw_artist(self.line)
+            self.plot.draw_artist(self.text)
+            self.canvas.blit(self.plot.bbox)
         except:
             pass
 
-    def mea_buffers(self):
-        self.wtime = self.wtime[-(self.buff_max-1):]
-        self.width = self.width[-(self.buff_max-1):]
+    def buffers(self):
+        self.time = self.time[-(self.buff_max-1):]
+        self.data = self.data[-(self.buff_max-1):]
 
-
-    def pow_buffers(self):
-        self.ptime = self.ptime[-(self.buff_max-1):]
-        self.power = self.power[-(self.buff_max-1):]
-
+    def update_data(self, time, dato):
+        if self.first == 0 or self.first > time or self.time_ant > time:
+            self.first = time
+            self.reset_data()
+            self.distance = 0
+        if time-self.first > self.duration:
+            self.distance = time-self.first-self.duration
+        self.time.append(time-self.first)
+        self.data.append(dato)
+        self.line.set_data(np.array(self.time)-self.distance, self.data)
+        if len(self.data) > self.buff_max:
+            self.buffers()
+        if len(self.time) > 2:
+            # Melt pool measures filtered value
+            mean = np.round(self.filter.update
+                            (self.data[-1], self.time[-1]), self.t)
+            self.text.set_text('%.1f' % mean)
+            mean = self._limited_range(mean, self.min_mea, self.max_mea)
+            self.text.set_y(mean)
+            self.text.set_x(0.98 * self.duration)
+        self.time_ant = time
 
 if __name__ == "__main__":
     rospy.init_node('data_plot')
