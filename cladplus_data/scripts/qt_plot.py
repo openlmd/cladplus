@@ -176,7 +176,7 @@ class Graph():
         self.time = self.time[-(self.buff_max-1):]
         self.data = self.data[-(self.buff_max-1):]
 
-    def update_data(self, time, dato):
+    def update_data(self, time, data):
         if self.first == 0 or self.first > time or self.time_ant > time:
             self.first = time
             self.reset_data()
@@ -184,12 +184,12 @@ class Graph():
         if time-self.first > self.duration:
             self.distance = time-self.first-self.duration
         self.time.append(time-self.first)
-        self.data.append(dato)
+        self.data.append(data)
         self.line.set_data(np.array(self.time)-self.distance, self.data)
         if len(self.data) > self.buff_max:
             self.buffers()
         if len(self.time) > 2:
-            # Melt pool measures filtered value
+            # Measures filtered value
             mean = np.round(self.filter.update
                             (self.data[-1], self.time[-1]), self.t)
             self.text.set_text('%.1f' % mean)
