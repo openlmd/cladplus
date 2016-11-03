@@ -80,13 +80,13 @@ class QtPlot(QtGui.QWidget):
 
     def measures(self, msg_geometry):
         time = msg_geometry.header.stamp.to_sec()
-        dato = msg_geometry.minor_axis
-        self.width.update_data(time, dato)
+        data = msg_geometry.minor_axis
+        self.width.update_data(time, data)
 
     def power_fn(self, msg_power):
         time = msg_power.header.stamp.to_sec()
-        dato = msg_power.value
-        self.power.update_data(time, dato)
+        data = msg_power.value
+        self.power.update_data(time, data)
 
     def timeMeasuresEvent(self):
         self.width.timeEvent()
