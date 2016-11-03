@@ -8,6 +8,14 @@ adjusting laser power using an infrared image sensing camera as feedback. The
 controller helps to overcome the effects of thermal variations and reduces
 cladding geometric variations.
 
+## Process parameters
+First to designe a control system it is mandatory to have a complete knowledge of the proccess. Specifically, in this one exists a big amount of variable parameters such as laser power, powder flow, deposition velocity. In this case, the laser power has been chosen due to it affects straightly in the track width.The rest of parameters were fixed by several test.
+
+## Control loop
+The control loop is based on a PI controller. The track width is taken from the thermal camera images by image processing. Asynchronously, the control loop calculates the power necessary to reach the setpoint.
+
+![Width calculation](./cladplus/media/width.png)
+
 
 ## Contents
 
@@ -32,4 +40,14 @@ To play a bag file with the camera registration:
 roscore
 rosrun rosbag play control.bag --clock
 roslaunch cladplus_data cladvid.launch sim:=true
+```
+
+To use simultaneously with other Openlmd projects:
+
+```shell
+roslaunch cladplus_data cladvid_mashes.launch
+```
+
+```shell
+roslaunch cladplus_data cladvid_proper.launch
 ```
