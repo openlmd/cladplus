@@ -35,11 +35,10 @@ class NdControl():
         self.msg_power = MsgPower()
         self.mode = MANUAL
 
-        # rospy.set_param('/process/power', 1000)
-
         self.status = False
         self.time_step = None
         self.track_number = 0
+        self.step_increase = 100
         self.control = Control()
         self.updateParameters()
 
@@ -78,19 +77,16 @@ class NdControl():
 
     def cb_mode(self, msg_mode):
         self.mode = msg_mode.value
+        self.track_number = 0
         rospy.loginfo('Mode: ' + str(self.mode))
-        # print self.mode
 
     def cb_control(self, msg_control):
         self.updateParameters()
-        # rospy.loginfo(rospy.get_param('/control/manual'))
-        # rospy.loginfo(rospy.get_param('/control/step'))
+        self.track_number = 0
         self.control.pid.set_setpoint(self.setpoint)
 
     def cb_status(self, msg_status):
-
         self.power_ant = msg_status.power
-        # print msg_status.laser_on, self.status, self.time_step
         if msg_status.laser_on and not self.status:
                 self.time_step = 0
                 self.track_number += 1
@@ -105,11 +101,10 @@ class NdControl():
             value = self.automatic(msg_geo.minor_axis, time)
         elif self.mode == STEP:
             value = self.step(time)
+        value = self.cooling(msg_geo.minor_axis, value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
         rospy.set_param('/process/power', value)
-        print value
-        # print '# Timestamp', time, '# Power', self.msg_power.value, self.time_step
         self.pub_power.publish(self.msg_power)
 
     def manual(self, power):
@@ -117,35 +112,39 @@ class NdControl():
         return value
 
     def automatic(self, minor_axis, time):
-        if minor_axis > 0.5:
+        # condicion inicio control
+        if minor_axis > 0.5 and self.track_number > 1:
             value = self.control.pid.update(minor_axis, time)
         else:
             value = self.control.pid.power(self.power)
         return value
 
     def step(self, time):
-        if self.time_step == 0:
-            self.time_step = time
-        if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
-            value = self.power_step
+        #Para programalo para un tempo de salto
+        # if self.time_step == 0:
+        #     self.time_step = time
+        # if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
+        #     value = self.power_step
         if self.track_number > 1:
-            value = self.power_step
+            value = self.power_step + ((self.track_number-1)*self.step_increase)
         else:
-            value = self.power
+            value = self.power_step
+        value = self.range(value)
         return value
 
-    def next(self, time, msg_geo):
-        # condicion inicio control
-        if self.track_number > 1:
-            value = self.self.automatic(msg_geo.minor_axis, time)
-        else:
-            value = self.power
+    def range(self, value):
+        if value < self.power_min:
+            value = self.power_min
+        elif value > self.power_max:
+            value = self.power_max
         return value
 
-    def cooling(self, time, msg_geo):
+    def cooling(self, msg_geo, value):
         #condicion de parada
+        if msg_geo > 4.5:
+            value = 200
+        return value
         #funcion para que non se sobrequente
-        pass
         #sperar a que enfrie ou parar
 
 

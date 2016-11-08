@@ -75,7 +75,6 @@ class QtPlot(QtGui.QWidget):
         self.power.plot_title = 'Power'
         self.power.yunits_title = 'Power(W)'
         self.power.xunits_title = 'Time(s)'
-
         self.power.draw_figure()
 
     def measures(self, msg_geometry):
@@ -181,6 +180,7 @@ class Graph():
             self.first = time
             self.reset_data()
             self.distance = 0
+            self.canvas.update()
         if time-self.first > self.duration:
             self.distance = time-self.first-self.duration
         self.time.append(time-self.first)
