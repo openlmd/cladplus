@@ -125,11 +125,20 @@ class NdControl():
         #     self.time_step = time
         # if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
         #     value = self.power_step
+        # else:
+        #     value = self.power
+        #Para saltar de potencia en potencia
         if self.track_number > 1:
-            value = self.power_step + ((self.track_number-1)*self.step_increase)
+            value = self.power_step - ((self.track_number-1)*self.step_increase)
         else:
             value = self.power_step
         value = self.range(value)
+        #Para un valor fijo no segundo cordón
+        # if self.track_number > 1:
+        #     value = self.power_step
+        # else:
+        #     value = self.power
+        # value = self.range(value)
         return value
 
     def range(self, value):

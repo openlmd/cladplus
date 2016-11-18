@@ -47,12 +47,12 @@ class QtPlot():
         self.control = np.array(control)
         index, index_f, step, fstep = self.detect_step(self.geometry)
         self.geometry = self.geometry[(index[0]-10):(index_f[0]+10)]
-        #Buscando o punto co mesmo time stamp
+        #Looking for the data with the same time stamp
         c_s = np.where(self.control == step[0][0])[0]
         c_f = np.where(self.control == fstep[0][0])[0]
-        #Collese a parte de control que nos interesa
+        #Taking the interesting part
         self.control = self.control[(c_s[0]-10):(c_f[0]+10)]
-        # Comezase a contar no tempo cero
+        # Start point 0 sec
         self.geometry[:, 0] = self.geometry[:, 0]-self.geometry[0, 0]
         self.control[:, 0] = self.control[:, 0]-self.control[0, 0]
 
