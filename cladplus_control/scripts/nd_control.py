@@ -133,7 +133,7 @@ class NdControl():
         else:
             value = self.power_step
         value = self.range(value)
-        #Para un valor fijo no segundo cordón
+        #Para un valor fijo no segundo cordon
         # if self.track_number > 1:
         #     value = self.power_step
         # else:
