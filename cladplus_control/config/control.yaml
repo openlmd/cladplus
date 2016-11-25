@@ -3,6 +3,5 @@ control: {
   power: {max: 1500, min: 0},
   step: {power: 800, trigger: 2},
   manual: {power: 1000},
-  automatic: {width: 3.4},
-  ramp: {initial: 600, final: 1500, step: 100, t_time: 12.5}
+  automatic: {width: 2.0}
 }

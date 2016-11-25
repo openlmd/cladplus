@@ -11,6 +11,8 @@ from mashes_measures.msg import MsgStatus
 
 from control.control import Control
 from control.control import PID
+import numpy as np
+
 
 MANUAL = 0
 STEP = 2
@@ -41,6 +43,8 @@ class NdControl():
         self.step_increase = 100
         self.control = Control()
         self.updateParameters()
+
+        self.track = []
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -112,8 +116,16 @@ class NdControl():
         return value
 
     def automatic(self, minor_axis, time):
+        #taking control parameters
+        if minor_axis > 0.5 and self.track_number is 3:
+            print 'taking reference data'
+            self.track.append(minor_axis)
+            self.setpoint = sum(self.track)/len(self.track)
+            auto = {'width': self.setpoint}
+            rospy.set_param('/control/automatic', auto)
+            self.control.pid.set_setpoint(self.setpoint)
         # condicion inicio control
-        if minor_axis > 0.5 and self.track_number > 1:
+        if minor_axis > 0.5 and self.track_number >= 4:
             value = self.control.pid.update(minor_axis, time)
         else:
             value = self.control.pid.power(self.power)
@@ -121,18 +133,18 @@ class NdControl():
 
     def step(self, time):
         #Para programalo para un tempo de salto
-        # if self.time_step == 0:
-        #     self.time_step = time
-        # if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
-        #     value = self.power_step
-        # else:
-        #     value = self.power
-        #Para saltar de potencia en potencia
-        if self.track_number > 1:
-            value = self.power_step - ((self.track_number-1)*self.step_increase)
-        else:
+        if self.time_step == 0:
+            self.time_step = time
+        if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
             value = self.power_step
-        value = self.range(value)
+        else:
+            value = self.power
+        #Para saltar de potencia en potencia
+        # if self.track_number > 1:
+        #     value = self.power_step - ((self.track_number-1)*self.step_increase)
+        # else:
+        #     value = self.power_step
+        # value = self.range(value)
         #Para un valor fijo no segundo cordon
         # if self.track_number > 1:
         #     value = self.power_step

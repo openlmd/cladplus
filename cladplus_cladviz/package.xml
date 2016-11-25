@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>cladplus_data</name>
+  <name>cladplus_cladviz</name>
   <version>0.1.0</version>
-  <description>The cladplus_data package.</description>
+  <description>The cladplus_cladviz package.</description>
   <maintainer email="veronica.panadeiro@aimen.es">Verónica Panadeiro</maintainer>
   <license>BSD</license>
 

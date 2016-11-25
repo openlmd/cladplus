@@ -20,7 +20,7 @@ The control loop is based on a PI controller. The track width is taken from the 
 ## Contents
 
 This meta-package contains two packages:
-- cladplus_data: contains the working cell description files and the representation files.
+- cladplus_cladviz: contains the working cell description files and the representation files.
 - cladplus_control: contains the user interface and control files.
 
 ## Quick start
@@ -30,7 +30,7 @@ This meta-package contains two packages:
 To record a bag file with the camera adquisition:
 
 ```shell
-roslaunch cladplus_data cladvid.launch
+roslaunch cladplus_cladviz cladvid.launch
 rosrun rosbag record -O control.bag /tachyon/image
 ```
 
@@ -39,15 +39,15 @@ To play a bag file with the camera registration:
 ```shell
 roscore
 rosrun rosbag play control.bag --clock
-roslaunch cladplus_data cladvid.launch sim:=true
+roslaunch cladplus_cladviz cladvid.launch sim:=true
 ```
 
 To use simultaneously with other Openlmd projects:
 
 ```shell
-roslaunch cladplus_data cladvid_mashes.launch
+roslaunch cladplus_cladviz cladvid_mashes.launch
 ```
 
 ```shell
-roslaunch cladplus_data cladvid_proper.launch
+roslaunch cladplus_cladviz cladvid_proper.launch
 ```

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(cladplus_data)
+project(cladplus_cladviz)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
