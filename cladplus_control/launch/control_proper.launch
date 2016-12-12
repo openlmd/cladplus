@@ -4,16 +4,9 @@
 
   <rosparam command="load" file="$(find cladplus_control)/config/control.yaml" />
 
-  <node name="geometry_tachyon" pkg="mashes_measures" type="nd_geometry.py">
-    <param name="threshold" type="int" value="200" />
-    <param name="image" type="str" value="/tachyon/image" />
-    <param name="threshold" type="int" value="200" />
-    <param name="config" type="str" value="$(find mashes_measures)/config/tachyon.yaml" />
-  </node>
-
   <node name="control" pkg="cladplus_control" type="nd_control.py">
     <param name="power_min" type="double" value="0.0" />
-    <param name="power_max" type="double" value="1500.0" />
+    <param name="power_max" type="double" value="1300.0" />
   </node>
 
   <node name="plot_power" pkg="rqt_plot" type="rqt_plot" args="/control/power/value" if="$(arg gui)" />

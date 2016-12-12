@@ -44,6 +44,9 @@ class NdControl():
         self.control = Control()
         self.updateParameters()
 
+        self.t_reg = 10
+        self.t_auto = 40
+
         self.track = []
 
         self.setPowerParameters(rospy.get_param('/control/power'))
@@ -106,6 +109,7 @@ class NdControl():
         elif self.mode == STEP:
             value = self.step(time)
         value = self.cooling(msg_geo.minor_axis, value)
+        value = self.range(value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
         rospy.set_param('/process/power', value)
@@ -117,18 +121,31 @@ class NdControl():
 
     def automatic(self, minor_axis, time):
         #taking control parameters
-        if minor_axis > 0.5 and self.track_number is 3:
-            print 'taking reference data'
+        # if minor_axis > 0.5 and self.track_number is 3:
+        #     print 'taking reference data'
+        #     self.track.append(minor_axis)
+        #     self.setpoint = sum(self.track)/len(self.track)
+        #     auto = {'width': self.setpoint}
+        #     rospy.set_param('/control/automatic', auto)
+        #     self.control.pid.set_setpoint(self.setpoint)
+
+        # condicion inicio control
+        # if minor_axis > 0.5 and self.track_number >= 4:
+        #     value = self.control.pid.update(minor_axis, time)
+        # else:
+        #     value = self.control.pid.power(self.power)
+        if self.time_step == 0:
+            self.time_step = time
+        if self.status and self.time_step > 0 and time - self.time_step > self.t_reg and time - self.time_step < self.t_auto:
             self.track.append(minor_axis)
             self.setpoint = sum(self.track)/len(self.track)
             auto = {'width': self.setpoint}
             rospy.set_param('/control/automatic', auto)
             self.control.pid.set_setpoint(self.setpoint)
-        # condicion inicio control
-        if minor_axis > 0.5 and self.track_number >= 4:
+        if self.status and self.time_step > 0 and time - self.time_step > self.t_auto:
             value = self.control.pid.update(minor_axis, time)
         else:
-            value = self.control.pid.power(self.power)
+            value = self.power
         return value
 
     def step(self, time):
