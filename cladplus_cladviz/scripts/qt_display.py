@@ -66,17 +66,17 @@ class QtDisplay(QtGui.QWidget):
         self.image = np.zeros((size, size, 3), dtype=np.uint8)
 
     def paintFrame(self, image):
-	if len(image.shape) == 2:
+        if len(image.shape) == 2:
             image = LUT_IRON[image]
         height, width, channels = image.shape
-	width, height = 2 * width, 2 * height
+        width, height = 2 * width, 2 * height
         image = cv2.resize(image, (width, height))
         image = QtGui.QImage(image.tostring(), width, height,
                              channels * width, QtGui.QImage.Format_RGB888)
-	self.pixmap.convertFromImage(image)
+        self.pixmap.convertFromImage(image)
         pixmap = self.pixmap.scaled(self.lblCamera.size(),
                                     QtCore.Qt.KeepAspectRatio)
-        painter = QtGui.QPainter()	
+        painter = QtGui.QPainter()
         painter.begin(self.pixmap)
         painter.setWindow(0, 0, 32, 32)
         painter.end()

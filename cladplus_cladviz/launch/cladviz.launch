@@ -12,5 +12,5 @@
         <arg name="gui" value="false"/>
     </include>
 
-    <node name="cladviz" pkg="cladplus_data" type="cladviz.py"/>
+    <node name="cladviz" pkg="cladplus_cladviz" type="cladviz.py"/>
 </launch>

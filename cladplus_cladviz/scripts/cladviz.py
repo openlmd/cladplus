@@ -17,7 +17,7 @@ from qt_display import QtDisplay
 class CladViz(QtGui.QMainWindow):
     def __init__(self):
         super(CladViz, self).__init__()
-        path = rospkg.RosPack().get_path('cladplus_data')
+        path = rospkg.RosPack().get_path('cladplus_cladviz')
         loadUi(os.path.join(path, 'resources', 'cladviz.ui'), self)
 
         self.qt_plot = QtPlot()

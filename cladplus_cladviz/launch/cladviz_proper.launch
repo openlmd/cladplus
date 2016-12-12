@@ -1,0 +1,12 @@
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="gui" default="true" />
+
+    <param name="/use_sim_time" value="$(arg sim)" />
+
+    <include file="$(find cladplus_control)/launch/control_proper.launch">
+        <arg name="gui" value="false"/>
+    </include>
+
+    <node name="cladviz" pkg="cladplus_cladviz" type="cladviz.py"/>
+</launch>

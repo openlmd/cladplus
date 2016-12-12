@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>380</height>
+    <height>386</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,7 +82,7 @@ color: rgb(255, 255, 255);</string>
    <item>
     <widget class="QTabWidget" name="tbParams">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">

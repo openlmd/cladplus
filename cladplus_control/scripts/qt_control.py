@@ -102,7 +102,7 @@ class QtControl(QtGui.QWidget):
         if self.btnMode.currentText() == "Manual":
             self.lblStatus.setText("Manual")
             self.lblStatus.setStyleSheet(
-                "background-color: rgb(255, 255, 0); color: rgb(0, 0, 0);")
+                "background-color: rgb(255, 220, 0); color: rgb(0, 0, 0);")
             self.mode = MANUAL
             self.tbParams.setCurrentIndex(1)
         elif self.btnMode.currentText() == "Automatic":
@@ -114,7 +114,7 @@ class QtControl(QtGui.QWidget):
         elif self.btnMode.currentText() == "Step":
             self.lblStatus.setText("Step")
             self.lblStatus.setStyleSheet(
-                "background-color: rgb(0, 255, 0); color: rgb(255, 255, 255);")
+                "background-color: rgb(128, 0, 128); color: rgb(255, 255, 255);")
             self.mode = STEP
             self.tbParams.setCurrentIndex(2)
 
@@ -156,7 +156,6 @@ class QtControl(QtGui.QWidget):
 
 if __name__ == '__main__':
     rospy.init_node('control_panel')
-
     app = QtGui.QApplication(sys.argv)
     qt_control = QtControl()
     qt_control.show()
