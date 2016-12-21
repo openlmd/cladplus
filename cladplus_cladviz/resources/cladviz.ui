@@ -40,7 +40,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../../../../.designer/backup/+.png</normaloff>../../../../../.designer/backup/+.png</iconset>
+    <normaloff>+.png</normaloff>+.png</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
