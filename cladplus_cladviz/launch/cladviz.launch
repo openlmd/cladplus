@@ -12,5 +12,9 @@
         <arg name="gui" value="false"/>
     </include>
 
+    <!-- <include file="$(find cladplus_labjack)/launch/labjack.launch" unless="$(arg sim)">
+        <arg name="gui" value="$(arg gui)"/>
+    </include> -->
+
     <node name="cladviz" pkg="cladplus_cladviz" type="cladviz.py"/>
 </launch>

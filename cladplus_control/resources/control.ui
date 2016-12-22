@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>386</height>
+    <width>325</width>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,14 +82,14 @@ color: rgb(255, 255, 255);</string>
    <item>
     <widget class="QTabWidget" name="tbParams">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>Automatic</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
           <widget class="QLabel" name="lblWidth">
@@ -114,21 +114,28 @@ color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="lblKd">
            <property name="text">
             <string> Kd:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="6" column="1">
+          <widget class="QDoubleSpinBox" name="sbTimecontrol">
+           <property name="suffix">
+            <string> s</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
           <widget class="QDoubleSpinBox" name="sbKd">
            <property name="maximum">
             <double>1000.000000000000000</double>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="sbKp">
            <property name="maximum">
             <double>1000.000000000000000</double>
@@ -138,7 +145,7 @@ color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QDoubleSpinBox" name="sbKi">
            <property name="maximum">
             <double>1000.000000000000000</double>
@@ -148,17 +155,62 @@ color: rgb(255, 255, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="lblKi">
            <property name="text">
             <string> Ki: </string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="lblKp">
            <property name="text">
             <string> Kp: </string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="lblTime_3">
+           <property name="text">
+            <string> Start time:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QDoubleSpinBox" name="sbTrack"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="lblTrack_2">
+           <property name="text">
+            <string> Start track:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="Line" name="line_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="Line" name="line_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="Line" name="line_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
          </item>
@@ -307,6 +359,56 @@ color: rgb(255, 255, 255);</string>
     </widget>
    </item>
    <item>
+    <layout class="QGridLayout" name="gridLayout_7">
+     <item row="0" column="1">
+      <widget class="QLabel" name="lblControl">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 0, 0);
+color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Stoped</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblLenght">
+       <property name="text">
+        <string>Lenght:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="lblTime_2">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblTrack">
+       <property name="text">
+        <string>Track number:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblControl_2">
+       <property name="text">
+        <string>Control:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lblNumber">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QPushButton" name="btnControl">
      <property name="text">
       <string>Accept Parameters</string>
@@ -332,19 +434,6 @@ color: rgb(255, 255, 255);</string>
       <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <widget class="QPushButton" name="btnCalibrate">

@@ -13,6 +13,7 @@ add_message_files(
   FILES
   MsgMode.msg
   MsgPower.msg
+  MsgStart.msg
   MsgControl.msg
 )
 

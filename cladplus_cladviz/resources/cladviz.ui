@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>800</height>
+    <width>949</width>
+    <height>537</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,13 +30,8 @@
   </property>
   <property name="font">
    <font>
-    <pointsize>9</pointsize>
-    <weight>50</weight>
-    <bold>false</bold>
+    <family>LMD Control</family>
    </font>
-  </property>
-  <property name="windowTitle">
-   <string>LMD Control</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -63,37 +58,61 @@
      <bold>false</bold>
     </font>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="22" column="1">
-     <widget class="QLabel" name="lblStatus">
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="2" column="1">
+     <widget class="QWidget" name="wdtDisplay" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>300</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="vl_display">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
+      </layout>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="lblLogo">
       <property name="maximumSize">
        <size>
         <width>300</width>
         <height>16777215</height>
        </size>
       </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(255, 255, 127);</string>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
       </property>
       <property name="text">
-       <string>status</string>
+       <string/>
       </property>
-      <property name="margin">
-       <number>3</number>
+      <property name="pixmap">
+       <pixmap>+.png</pixmap>
       </property>
-      <property name="indent">
-       <number>3</number>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
-    <item row="0" column="0" rowspan="25">
-     <layout class="QHBoxLayout" name="boxPlot">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-     </layout>
-    </item>
-    <item row="24" column="1">
+    <item row="5" column="1">
      <widget class="QPushButton" name="btnQuit">
       <property name="enabled">
        <bool>true</bool>
@@ -138,42 +157,7 @@
       </property>
      </widget>
     </item>
-    <item row="23" column="1">
-     <widget class="Line" name="line_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="21" column="1">
-     <widget class="Line" name="line_2">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="20" column="1">
-     <widget class="QWidget" name="wdtDisplay" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>300</height>
-       </size>
-      </property>
-      <layout class="QVBoxLayout" name="vl_display">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMinimumSize</enum>
-       </property>
-      </layout>
-     </widget>
-    </item>
-    <item row="18" column="1">
+    <item row="1" column="1">
      <widget class="QTabWidget" name="tabWidget">
       <property name="minimumSize">
        <size>
@@ -197,28 +181,35 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="1" rowspan="5">
-     <widget class="QLabel" name="lblLogo">
+    <item row="0" column="0" rowspan="6">
+     <layout class="QHBoxLayout" name="boxPlot">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+     </layout>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="lblStatus">
       <property name="maximumSize">
        <size>
         <width>300</width>
         <height>16777215</height>
        </size>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="lineWidth">
-       <number>1</number>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255, 255, 127);</string>
       </property>
       <property name="text">
-       <string/>
+       <string>status</string>
       </property>
-      <property name="pixmap">
-       <pixmap>+.png</pixmap>
+      <property name="margin">
+       <number>3</number>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
+      <property name="indent">
+       <number>3</number>
       </property>
      </widget>
     </item>

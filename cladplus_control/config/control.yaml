@@ -3,5 +3,5 @@ control: {
   power: {max: 1400, min: 600},
   step: {power: 800, trigger: 2},
   manual: {power: 1000},
-  automatic: {width: 2.0}
+  automatic: {width: 2.0, time: 40, track_number: 3}
 }

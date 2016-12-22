@@ -6,6 +6,7 @@ import rospkg
 from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
+from cladplus_control.msg import MsgStart
 from mashes_measures.msg import MsgGeometry
 from mashes_measures.msg import MsgStatus
 
@@ -33,19 +34,25 @@ class NdControl():
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
         self.pub_power = rospy.Publisher(
             '/control/power', MsgPower, queue_size=10)
+        self.pub_start = rospy.Publisher(
+            '/control/start', MsgStart, queue_size=10)
+
 
         self.msg_power = MsgPower()
+        self.msg_start = MsgStart()
         self.mode = MANUAL
 
         self.status = False
-        self.time_step = None
+        self.time_step = float(0)
         self.track_number = 0
         self.step_increase = 100
         self.control = Control()
         self.updateParameters()
+        self.time_control = 0
+        self.start = False
 
-        self.t_reg = 10
-        self.t_auto = 40
+        self.t_reg = 1
+        # self.t_auto = 40
 
         self.track = []
 
@@ -67,6 +74,8 @@ class NdControl():
 
     def setAutoParameters(self, params):
         self.setpoint = params['width']
+        self.t_auto = params['time']
+        self.track_control = params['track_number']
 
     def setPowerParameters(self, params):
         self.power_min = params['min']
@@ -112,14 +121,25 @@ class NdControl():
         value = self.range(value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
+        self.msg_power.time = str(self.time_control)
+        self.msg_power.track_number = self.track_number
         rospy.set_param('/process/power', value)
         self.pub_power.publish(self.msg_power)
+        start = self.msg_start.control
+        if start is not self.start:
+            self.msg_start.setpoint = self.setpoint
+            self.pub_start.publish(self.msg_start)
+        self.start = start
+
 
     def manual(self, power):
         value = self.control.pid.power(power)
         return value
 
     def automatic(self, minor_axis, time):
+        if self.time_step == 0:
+            self.time_step = time
+        self.time_control= time - self.time_step
         #taking control parameters
         # if minor_axis > 0.5 and self.track_number is 3:
         #     print 'taking reference data'
@@ -134,18 +154,16 @@ class NdControl():
         #     value = self.control.pid.update(minor_axis, time)
         # else:
         #     value = self.control.pid.power(self.power)
-        if self.time_step == 0:
-            self.time_step = time
-        if self.status and self.time_step > 0 and time - self.time_step > self.t_reg and time - self.time_step < self.t_auto:
+        if self.status and self.time_step > 0 and self.time_control > self.t_reg and self.time_control < self.t_auto:
             self.track.append(minor_axis)
             self.setpoint = sum(self.track)/len(self.track)
-            auto = {'width': self.setpoint}
-            rospy.set_param('/control/automatic', auto)
             self.control.pid.set_setpoint(self.setpoint)
-        if self.status and self.time_step > 0 and time - self.time_step > self.t_auto:
+        if self.status and self.time_step > 0 and self.time_control > self.t_auto:
             value = self.control.pid.update(minor_axis, time)
+            self.msg_start.control = True
         else:
             value = self.power
+            self.msg_start.control = False
         return value
 
     def step(self, time):

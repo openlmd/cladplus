@@ -7,6 +7,7 @@ import rospkg
 from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
+from cladplus_control.msg import MsgStart
 
 from mashes_tachyon.msg import MsgCalibrate
 from mashes_measures.msg import MsgGeometry
@@ -46,11 +47,14 @@ class QtControl(QtGui.QWidget):
         self.minor_axis = 0
         self.major_axis = 0
         self.power = 0
-
+        self.control = False
+        
         rospy.Subscriber(
             '/tachyon/geometry', MsgGeometry, self.cb_geometry, queue_size=1)
         rospy.Subscriber(
             '/control/power', MsgPower, self.cb_power, queue_size=1)
+        rospy.Subscriber(
+            '/control/start', MsgStart, self.cb_start, queue_size=1)
 
         self.btnModeClicked()
 
@@ -93,9 +97,13 @@ class QtControl(QtGui.QWidget):
 
     def setAutoParameters(self, params):
         self.sbWidth.setValue(params['width'])
+        self.sbTimecontrol.setValue(params['time'])
+        self.sbTrack.setValue(params['track_number'])
 
     def getAutoParameters(self):
-        params = {'width': self.sbWidth.value()}
+        params = {'width': self.sbWidth.value(),
+                  'time': self.sbTimecontrol.value(),
+                  'track_number': self.sbTrack.value()}
         return params
 
     def btnModeClicked(self):
@@ -147,11 +155,31 @@ class QtControl(QtGui.QWidget):
 
     def cb_power(self, msg_power):
         self.power = msg_power.value
+        self.lblNumber.setText(str(msg_power.track_number))
+        self.lblTime_2.setText(msg_power.time)
+
+    def cb_start(self, msg_start):
+        self.control = msg_start.control
+        if self.control is True:
+            self.sbWidth.setValue(msg_start.setpoint)
+            auto = self.getAutoParameters()
+            rospy.set_param('/control/automatic', auto)
 
     def tmrInfoEvent(self):
         self.lblInfo.setText(
             "Minor axis: %.2f<br>Major axis: %.2f<br><b>Power: %.0f</b>" % (
                 self.minor_axis, self.major_axis, self.power))
+        if self.control is True:
+            self.lblControl.setText("Activated")
+            self.lblControl.setStyleSheet(
+                 "background-color: rgb(0, 0, 128); color: rgb(255, 255, 255);")
+            # self.sbWidth.setValue(msg_start.setpoint)
+            # auto = self.getAutoParameters()
+            # rospy.set_param('/control/automatic', auto)
+        else:
+            self.lblControl.setText("Stoped")
+            self.lblControl.setStyleSheet(
+                 "background-color: rgb(255, 0, 0); color: rgb(255, 255, 255);")
 
 
 if __name__ == '__main__':
