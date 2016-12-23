@@ -1,7 +1,7 @@
 control: {
   parameters: {Kd: 0.0, Ki: 558.5, Kp: 73.2},
-  power: {max: 1400, min: 600},
+  power: {max: 1300, min: 700},
   step: {power: 800, trigger: 2},
   manual: {power: 1000},
-  automatic: {width: 2.0, time: 40, track_number: 3}
+  automatic: {width: 2.0, time: 2, track_number: 3}
 }

@@ -117,7 +117,7 @@ class NdControl():
             value = self.automatic(msg_geo.minor_axis, time)
         elif self.mode == STEP:
             value = self.step(time)
-        value = self.cooling(msg_geo.minor_axis, value)
+        # value = self.cooling(msg_geo.minor_axis, value)
         value = self.range(value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
