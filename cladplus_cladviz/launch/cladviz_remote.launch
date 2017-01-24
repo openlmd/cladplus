@@ -1,0 +1,21 @@
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="gui" default="true" />
+
+    <param name="/use_sim_time" value="$(arg sim)" />
+
+    <!-- <include file="$(find mashes_tachyon)/launch/tachyon.launch" unless="$(arg sim)">
+        <arg name="gui" value="$(arg gui)"/>
+    </include> -->
+
+    <include file="$(find cladplus_control)/launch/control_remote.launch">
+        <arg name="gui" value="false"/>
+        <arg name="sim" value="true"/>
+    </include>
+
+    <!-- <include file="$(find cladplus_labjack)/launch/labjack.launch" unless="$(arg sim)">
+        <arg name="gui" value="$(arg gui)"/>
+    </include> -->
+
+    <node name="cladviz" pkg="cladplus_cladviz" type="cladviz.py"/>
+</launch>

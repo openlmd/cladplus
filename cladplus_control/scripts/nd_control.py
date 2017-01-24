@@ -52,6 +52,8 @@ class NdControl():
         self.start = False
 
         self.t_reg = 1
+        #En caso de un tubo de 4 cm de diametro deseable que tome de referencia 3 cordon.
+        #self.t_reg = 16
         # self.t_auto = 40
 
         self.track = []
@@ -140,6 +142,7 @@ class NdControl():
         if self.time_step == 0:
             self.time_step = time
         self.time_control= time - self.time_step
+        #Funcionamiento varios cordones.
         #taking control parameters
         # if minor_axis > 0.5 and self.track_number is 3:
         #     print 'taking reference data'
@@ -154,6 +157,8 @@ class NdControl():
         #     value = self.control.pid.update(minor_axis, time)
         # else:
         #     value = self.control.pid.power(self.power)
+
+        #funcionamiento en continuo, inicia a registrar en t_reg e inicia control en t_auto
         if self.status and self.time_step > 0 and self.time_control > self.t_reg and self.time_control < self.t_auto:
             self.track.append(minor_axis)
             self.setpoint = sum(self.track)/len(self.track)
