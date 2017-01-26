@@ -7,6 +7,7 @@ import rospkg
 from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
+from cladplus_control.msg import MsgInfo
 from cladplus_control.msg import MsgStart
 
 from mashes_tachyon.msg import MsgCalibrate
@@ -48,11 +49,13 @@ class QtControl(QtGui.QWidget):
         self.major_axis = 0
         self.power = 0
         self.control = False
-        
+
         rospy.Subscriber(
             '/tachyon/geometry', MsgGeometry, self.cb_geometry, queue_size=1)
         rospy.Subscriber(
             '/control/power', MsgPower, self.cb_power, queue_size=1)
+        rospy.Subscriber(
+            '/control/info', MsgInfo, self.cb_power, queue_size=1)
         rospy.Subscriber(
             '/control/start', MsgStart, self.cb_start, queue_size=1)
 
@@ -155,8 +158,10 @@ class QtControl(QtGui.QWidget):
 
     def cb_power(self, msg_power):
         self.power = msg_power.value
-        self.lblNumber.setText(str(msg_power.track_number))
-        self.lblTime_2.setText(msg_power.time)
+
+    def cb_info(self, msg_info):
+        self.lblNumber.setText(str(msg_info.track_number))
+        self.lblTime_2.setText(msg_info.time)
 
     def cb_start(self, msg_start):
         self.control = msg_start.control

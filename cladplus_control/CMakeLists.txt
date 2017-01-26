@@ -15,6 +15,7 @@ add_message_files(
   MsgPower.msg
   MsgStart.msg
   MsgControl.msg
+  MsgInfo.msg
 )
 
 catkin_python_setup()

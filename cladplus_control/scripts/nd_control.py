@@ -6,6 +6,7 @@ import rospkg
 from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
+from cladplus_control.msg import MsgInfo
 from cladplus_control.msg import MsgStart
 from mashes_measures.msg import MsgGeometry
 from mashes_measures.msg import MsgStatus
@@ -34,11 +35,14 @@ class NdControl():
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
         self.pub_power = rospy.Publisher(
             '/control/power', MsgPower, queue_size=10)
+        self.pub_info = rospy.Publisher(
+            '/control/info', MsgInfo, queue_size=10)
         self.pub_start = rospy.Publisher(
             '/control/start', MsgStart, queue_size=10)
 
 
         self.msg_power = MsgPower()
+        self.msg_info = MsgInfo()
         self.msg_start = MsgStart()
         self.mode = MANUAL
 
@@ -51,7 +55,7 @@ class NdControl():
         self.time_control = 0
         self.start = False
 
-        self.t_reg = 1
+        self.t_reg = 20
         #En caso de un tubo de 4 cm de diametro deseable que tome de referencia 3 cordon.
         #self.t_reg = 16
         # self.t_auto = 40
@@ -123,10 +127,11 @@ class NdControl():
         value = self.range(value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
-        self.msg_power.time = str(self.time_control)
-        self.msg_power.track_number = self.track_number
+        self.msg_info.time = str(self.time_control)
+        self.msg_info.track_number = self.track_number
         rospy.set_param('/process/power', value)
         self.pub_power.publish(self.msg_power)
+        self.pub_info.publish(self.msg_info)
         start = self.msg_start.control
         if start is not self.start:
             self.msg_start.setpoint = self.setpoint
