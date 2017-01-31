@@ -52,15 +52,10 @@ class NdControl():
         self.step_increase = 100
         self.control = Control()
         self.updateParameters()
-        self.time_control = 0
         self.start = False
 
-        self.t_reg = 20
-        #En caso de un tubo de 4 cm de diametro deseable que tome de referencia 3 cordon.
-        #self.t_reg = 16
-        # self.t_auto = 40
-
-        self.track = []
+        self.t_reg = 0
+        self.time_control = 0
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -80,6 +75,7 @@ class NdControl():
 
     def setAutoParameters(self, params):
         self.setpoint = params['width']
+        self.t_reg = params['reg']
         self.t_auto = params['time']
         self.track_control = params['track_number']
 
@@ -123,8 +119,8 @@ class NdControl():
             value = self.automatic(msg_geo.minor_axis, time)
         elif self.mode == STEP:
             value = self.step(time)
-        # value = self.cooling(msg_geo.minor_axis, value)
         value = self.range(value)
+        value = self.cooling(msg_geo.minor_axis, value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
         self.msg_info.time = str(self.time_control)
@@ -147,28 +143,11 @@ class NdControl():
         if self.time_step == 0:
             self.time_step = time
         self.time_control= time - self.time_step
-        #Funcionamiento varios cordones.
-        #taking control parameters
-        # if minor_axis > 0.5 and self.track_number is 3:
-        #     print 'taking reference data'
-        #     self.track.append(minor_axis)
-        #     self.setpoint = sum(self.track)/len(self.track)
-        #     auto = {'width': self.setpoint}
-        #     rospy.set_param('/control/automatic', auto)
-        #     self.control.pid.set_setpoint(self.setpoint)
-
-        # condicion inicio control
-        # if minor_axis > 0.5 and self.track_number >= 4:
-        #     value = self.control.pid.update(minor_axis, time)
-        # else:
-        #     value = self.control.pid.power(self.power)
-
-        #funcionamiento en continuo, inicia a registrar en t_reg e inicia control en t_auto
         if self.status and self.time_step > 0 and self.time_control > self.t_reg and self.time_control < self.t_auto:
             self.track.append(minor_axis)
             self.setpoint = sum(self.track)/len(self.track)
             self.control.pid.set_setpoint(self.setpoint)
-        if self.status and self.time_step > 0 and self.time_control > self.t_auto:
+        if self.status and self.time_step > 0 and self.time_control > self.t_auto and self.track_number >= self.track_control:
             value = self.control.pid.update(minor_axis, time)
             self.msg_start.control = True
         else:
@@ -177,25 +156,13 @@ class NdControl():
         return value
 
     def step(self, time):
-        #Para programalo para un tempo de salto
+        #Step time
         if self.time_step == 0:
             self.time_step = time
         if self.status and self.time_step > 0 and time - self.time_step > self.trigger:
             value = self.power_step
         else:
             value = self.power
-        #Para saltar de potencia en potencia
-        # if self.track_number > 1:
-        #     value = self.power_step - ((self.track_number-1)*self.step_increase)
-        # else:
-        #     value = self.power_step
-        # value = self.range(value)
-        #Para un valor fijo no segundo cordon
-        # if self.track_number > 1:
-        #     value = self.power_step
-        # else:
-        #     value = self.power
-        # value = self.range(value)
         return value
 
     def range(self, value):
@@ -210,8 +177,7 @@ class NdControl():
         if msg_geo > 4.5:
             value = 200
         return value
-        #funcion para que non se sobrequente
-        #sperar a que enfrie ou parar
+        #avoiding overheating
 
 
 if __name__ == '__main__':
