@@ -56,6 +56,7 @@ class NdControl():
 
         self.t_reg = 0
         self.time_control = 0
+        self.track=[]
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
