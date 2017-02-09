@@ -3,7 +3,6 @@ import os
 import rospy
 import rospkg
 
-from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
 from cladplus_control.msg import MsgInfo
@@ -24,11 +23,8 @@ AUTOMATIC = 1
 class NdControl():
     def __init__(self):
         rospy.init_node('control')
-
         rospy.Subscriber(
             '/tachyon/geometry', MsgGeometry, self.cb_geometry, queue_size=1)
-        rospy.Subscriber(
-            '/control/mode', MsgMode, self.cb_mode, queue_size=1)
         rospy.Subscriber(
             '/control/parameters', MsgControl, self.cb_control, queue_size=1)
         rospy.Subscriber(
@@ -47,15 +43,21 @@ class NdControl():
         self.mode = MANUAL
 
         self.status = False
+
         self.time_step = float(0)
-        self.track_number = 0
         self.step_increase = 100
         self.control = Control()
         self.updateParameters()
         self.start = False
 
+        self.track= []
+
+        self.track_number = 0
         self.t_reg = 0
         self.time_control = 0
+        self.track_control = 3
+        self.auto_mode = 0
+        self.track_lenght = 0
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -75,9 +77,8 @@ class NdControl():
 
     def setAutoParameters(self, params):
         self.setpoint = params['width']
-        self.t_reg = params['reg']
-        self.t_auto = params['time']
-        self.track_control = params['track_number']
+        self.track_lenght = params['time']
+        self.auto_mode = params['mode']
 
     def setPowerParameters(self, params):
         self.power_min = params['min']
@@ -93,14 +94,13 @@ class NdControl():
         self.setManualParameters(rospy.get_param('/control/manual'))
         self.setAutoParameters(rospy.get_param('/control/automatic'))
 
-    def cb_mode(self, msg_mode):
-        self.mode = msg_mode.value
-        self.track_number = 0
-        rospy.loginfo('Mode: ' + str(self.mode))
-
     def cb_control(self, msg_control):
+        self.mode = msg_control.value
         self.updateParameters()
+        self.t_auto = 3* self.track_lenght
+        self.t_reg = 2* self.track_lenght
         self.track_number = 0
+        self.time_step= 0
         self.control.pid.set_setpoint(self.setpoint)
 
     def cb_status(self, msg_status):
@@ -130,10 +130,10 @@ class NdControl():
         self.pub_info.publish(self.msg_info)
         start = self.msg_start.control
         if start is not self.start:
+            self.control.pid.set_setpoint(self.setpoint)
             self.msg_start.setpoint = self.setpoint
             self.pub_start.publish(self.msg_start)
         self.start = start
-
 
     def manual(self, power):
         value = self.control.pid.power(power)
@@ -143,17 +143,26 @@ class NdControl():
         if self.time_step == 0:
             self.time_step = time
         self.time_control= time - self.time_step
-        if self.status and self.time_step > 0 and self.time_control > self.t_reg and self.time_control < self.t_auto:
-            self.track.append(minor_axis)
-            self.setpoint = sum(self.track)/len(self.track)
-            self.control.pid.set_setpoint(self.setpoint)
-        if self.status and self.time_step > 0 and self.time_control > self.t_auto and self.track_number >= self.track_control:
-            value = self.control.pid.update(minor_axis, time)
-            self.msg_start.control = True
-        else:
-            value = self.power
-            self.msg_start.control = False
+        value = self.power
+        self.msg_start.control = False
+        if self.status and self.time_step > 0:
+            if self.auto_mode is 0:
+                if self.time_control > self.t_reg and self.time_control < self.t_auto:
+                    self.auto_setpoint(minor_axis)
+                if self.time_control > self.t_auto:
+                    value = self.control.pid.update(minor_axis, time)
+                    self.msg_start.control = True
+            elif self.auto_mode is 1:
+                if self.track_number is 3:
+                    self.auto_setpoint(minor_axis)
+                if self.track_number >= 4:
+                    value = self.control.pid.update(minor_axis, time)
+                    self.msg_start.control = True
         return value
+
+    def auto_setpoint(self, minor_axis):
+        self.track.append(minor_axis)
+        self.setpoint = sum(self.track)/len(self.track)
 
     def step(self, time):
         #Step time
@@ -175,7 +184,7 @@ class NdControl():
     def cooling(self, msg_geo, value):
         #condicion de parada
         if msg_geo > 4.5:
-            value = 200
+            value = 0
         return value
         #avoiding overheating
 

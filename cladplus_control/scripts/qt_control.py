@@ -4,7 +4,7 @@ import sys
 import rospy
 import rospkg
 
-from cladplus_control.msg import MsgMode
+# from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
 from cladplus_control.msg import MsgInfo
@@ -30,18 +30,19 @@ class QtControl(QtGui.QWidget):
         loadUi(os.path.join(path, 'resources', 'control.ui'), self)
 
         self.btnMode.activated.connect(self.btnModeClicked)
+        self.btnAuto.activated.connect(self.btnAutoClicked)
         self.btnControl.clicked.connect(self.btnControlClicked)
         self.btnCalibrate.clicked.connect(self.btnCalibrateClicked)
 
-        self.pub_mode = rospy.Publisher(
-            '/control/mode', MsgMode, queue_size=10)
+        # self.pub_mode = rospy.Publisher(
+        #     '/control/mode', MsgMode, queue_size=10)
         self.pub_control = rospy.Publisher(
             '/control/parameters', MsgControl, queue_size=10)
         self.pub_calibrate = rospy.Publisher(
             '/tachyon/calibrate', MsgCalibrate, queue_size=10)
 
         self.mode = MANUAL
-        self.msg_mode = MsgMode()
+        # self.msg_mode = MsgMode()
         self.msg_control = MsgControl()
         self.msg_calibrate = MsgCalibrate()
 
@@ -52,6 +53,8 @@ class QtControl(QtGui.QWidget):
 
         self.track_number= 0
         self.time_control = 0
+
+        self.auto_mode = 0
 
 
         rospy.Subscriber(
@@ -104,15 +107,13 @@ class QtControl(QtGui.QWidget):
 
     def setAutoParameters(self, params):
         self.sbWidth.setValue(params['width'])
-        self.sbTimereg.setValue(params['reg'])
-        self.sbTimecontrol.setValue(params['time'])
-        self.sbTrack.setValue(params['track_number'])
+        self.sbTrack.setValue(params['time'])
+        self.auto_mode = params['mode']
 
     def getAutoParameters(self):
         params = {'width': self.sbWidth.value(),
-                  'reg': self.sbTimereg.value(),
-                  'time': self.sbTimecontrol.value(),
-                  'track_number': self.sbTrack.value()}
+                  'time': self.sbTrack.value(),
+                  'mode': self.auto_mode}
         return params
 
     def btnModeClicked(self):
@@ -135,8 +136,15 @@ class QtControl(QtGui.QWidget):
             self.mode = STEP
             self.tbParams.setCurrentIndex(2)
 
-        self.msg_mode.value = self.mode
-        self.pub_mode.publish(self.msg_mode)
+    def btnAutoClicked(self):
+        if self.btnAuto.currentText() == "Continuous":
+            self.auto_mode = 0
+            self.sbTrack.setEnabled(True)
+        elif self.btnAuto.currentText() == "Tracks":
+            self.sbTrack.setValue(0)
+            self.auto_mode = 1
+            self.sbTrack.setEnabled(False)
+
 
     def btnControlClicked(self):
         param = self.getParameters()
@@ -152,6 +160,7 @@ class QtControl(QtGui.QWidget):
         rospy.set_param('/control/automatic', auto)
 
         self.msg_control.change = True
+        self.msg_control.value = self.mode
         self.pub_control.publish(self.msg_control)
 
     def btnCalibrateClicked(self):
@@ -186,9 +195,6 @@ class QtControl(QtGui.QWidget):
             self.lblControl.setText("Activated")
             self.lblControl.setStyleSheet(
                  "background-color: rgb(0, 0, 128); color: rgb(255, 255, 255);")
-            # self.sbWidth.setValue(msg_start.setpoint)
-            # auto = self.getAutoParameters()
-            # rospy.set_param('/control/automatic', auto)
         else:
             self.lblControl.setText("Stoped")
             self.lblControl.setStyleSheet(
