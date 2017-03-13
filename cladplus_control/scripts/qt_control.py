@@ -196,7 +196,7 @@ class QtControl(QtGui.QWidget):
             self.lblControl.setStyleSheet(
                  "background-color: rgb(0, 0, 128); color: rgb(255, 255, 255);")
         else:
-            self.lblControl.setText("Stoped")
+            self.lblControl.setText("Stopped")
             self.lblControl.setStyleSheet(
                  "background-color: rgb(255, 0, 0); color: rgb(255, 255, 255);")
 

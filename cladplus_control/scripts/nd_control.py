@@ -58,6 +58,7 @@ class NdControl():
         self.track_control = 3
         self.auto_mode = 0
         self.track_lenght = 0
+        self.power_ant = 0
 
         self.setPowerParameters(rospy.get_param('/control/power'))
         self.control.pid.set_limits(self.power_min, self.power_max)
@@ -179,6 +180,8 @@ class NdControl():
             value = self.power_min
         elif value > self.power_max:
             value = self.power_max
+        if  not self.status:
+            value = 0
         return value
 
     def cooling(self, msg_geo, value):
