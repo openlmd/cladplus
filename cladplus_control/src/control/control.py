@@ -39,7 +39,7 @@ class Control():
 class PID():
     def __init__(self):
         self.set_parameters(1.0, 1.0, 0.0)
-        self.set_limits(600, 1400)
+        self.set_limits(0, 1500)
         self.setpoint = 0.0
         self.error = 0.0
         self.time = None

@@ -4,9 +4,17 @@
 
   <rosparam command="load" file="$(find cladplus_control)/config/control.yaml" />
 
-  <include file="$(find mashes_measures)/launch/measures.launch">
+  <!-- <include file="$(find mashes_measures)/launch/measures.launch">
     <arg name="gui" value="$(arg gui)" />
-  </include>
+  </include> -->
+
+  <node name="geometry_tachyon" pkg="mashes_measures" type="nd_geometry.py">
+    <param name="threshold" type="int" value="400" />
+    <param name="image" type="str" value="/tachyon/image" />
+    <param name="config" type="str" value="$(find mashes_measures)/config/tachyon.yaml" />
+  </node>
+
+  <node name="supervisor" pkg="mashes_measures" type="nd_supervisor.py" respawn="true" />
 
   <include file="$(find cladplus_labjack)/launch/labjack.launch" unless="$(arg sim)">
     <arg name="gui" value="$(arg gui)"/>

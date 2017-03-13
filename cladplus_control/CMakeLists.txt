@@ -11,9 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  MsgMode.msg
   MsgPower.msg
+  MsgStart.msg
   MsgControl.msg
+  MsgInfo.msg
 )
 
 catkin_python_setup()
