@@ -143,6 +143,7 @@ class NdControl():
     def automatic(self, minor_axis, time):
         if self.time_step == 0:
             self.time_step = time
+            self.control.pid.time = time
         self.time_control= time - self.time_step
         value = self.power
         self.msg_start.control = False
