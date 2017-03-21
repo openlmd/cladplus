@@ -1,5 +1,5 @@
 control: {
-  parameters: {Kd: 0.0, Ki: 558.5, Kp: 73.2},
+  parameters: {Kd: 0.0, Ki: 350.0, Kp: 100.2},
   power: {max: 1500, min: 500},
   step: {power: 800, trigger: 2},
   manual: {power: 1000},

@@ -16,6 +16,7 @@ The control loop is based on a PI controller. The track width is taken from the 
 
 ![Width calculation](./cladplus/media/width.png)
 
+[![Closed-loop control video ](./cladplus/media/portada.png)](https://www.youtube.com/watch?v=UBkpy7_ukrA&t=46s "Video")
 
 ## Contents
 
@@ -51,3 +52,5 @@ roslaunch cladplus_cladviz cladvid_mashes.launch
 ```shell
 roslaunch cladplus_cladviz cladvid_proper.launch
 ```
+## Acknowledgement
+!['This entities collaborate with the project financing and realization'](./cladplus/media/acknowledgement.png)
