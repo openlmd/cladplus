@@ -16,7 +16,7 @@ The control loop is based on a PI controller. The track width is taken from the 
 
 ![Width calculation](./cladplus/media/width.png)
 
-[![Closed-loop control video ] (./cladplus/media/portada.png)](https://www.youtube.com/watch?v=UBkpy7_ukrA&t=46s "Video")
+[![Closed-loop control video ](./cladplus/media/portada.png)](https://www.youtube.com/watch?v=UBkpy7_ukrA&t=46s "Video")
 
 ## Contents
 
