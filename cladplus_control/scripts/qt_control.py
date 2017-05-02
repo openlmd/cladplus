@@ -4,7 +4,6 @@ import sys
 import rospy
 import rospkg
 
-# from cladplus_control.msg import MsgMode
 from cladplus_control.msg import MsgControl
 from cladplus_control.msg import MsgPower
 from cladplus_control.msg import MsgInfo
@@ -16,6 +15,8 @@ from mashes_measures.msg import MsgGeometry
 from python_qt_binding import loadUi
 from python_qt_binding import QtGui
 from python_qt_binding import QtCore
+
+from qt_data import QtData
 
 
 MANUAL = 0
@@ -33,6 +34,9 @@ class QtControl(QtGui.QWidget):
         self.btnAuto.activated.connect(self.btnAutoClicked)
         self.btnControl.clicked.connect(self.btnControlClicked)
         self.btnCalibrate.clicked.connect(self.btnCalibrateClicked)
+
+        self.qtData = QtData()
+        self.tbParams.addTab(self.qtData, 'Data')
 
         # self.pub_mode = rospy.Publisher(
         #     '/control/mode', MsgMode, queue_size=10)
