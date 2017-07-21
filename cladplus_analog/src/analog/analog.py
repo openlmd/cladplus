@@ -2,16 +2,19 @@ import yaml
 import math
 import signal
 
-import u3
+import u12
 
 
-class LabJack():
+class Analog():
     def __init__(self):
         self.power_factor(0, 1500)
         self.count = 0
         self.setDacCount = 0
         self.go = True
+        self.openu12()
         self.reg = 5000
+        self.an0 = 0
+        self.an1 = 0
 
     def load_config(self, filename):
         with open(filename, "r") as ymlfile:
@@ -24,18 +27,18 @@ class LabJack():
         self.factor = 5.0 / (pwr_max - pwr_min)
         return self.factor
 
-    def openu3(self):
-        print 'Opening LabJack...'
+    def openu12(self):
+        print 'Opening Analog...'
         try:
-            self.dac = u3.U3()
+            self.dac = u12.U12()
             print 'Done'
         except:
             print 'The device may be not connected'
 
     def close(self):
-        print 'Closing LabJack...'
+        print 'Closing Analog...'
         try:
-            self.dac.closeu3()
+            self.dac.closeu12()
             print 'Done'
         except:
             print 'The device could be not closed'
@@ -51,8 +54,15 @@ class LabJack():
         # Lower the go flag
         self.go = False
 
-    def output(self, value):
-        self.dac.writeRegister(self.reg, value)
+    # def output(self, value):
+    #     self.dac.writeRegister(self.reg, value)
+
+    def output(self, an):
+        if self.reg == 5000:
+            self.an0 = an
+        if self.reg == 5002:
+            self.an1 = an
+        self.dac.eAnalogOut(analogOut0=self.an0, analogOut1=self.an1)
 
     def triangular(self, maxim):
         while(1):
@@ -106,11 +116,13 @@ if __name__ == '__main__':
     # The frequency of the sine wave, in Hz
     FREQUENCY = 10
 
-    dacs = LabJack()
+    dacs = Analog()
+    dacs.reg=5000
+    dacs.output(2.0)
+
 
     while(1):
-        dacs.output(1)
-
+        dacs.output(3.0)
     #dacs.triangular(4)
 
     #dacs.singenerator(FREQUENCY, UPDATE_INTERVAL)

@@ -181,8 +181,8 @@ class NdControl():
             value = self.power_min
         elif value > self.power_max:
             value = self.power_max
-        if  not self.status:
-            value = 0
+        # if  not self.status:
+        #     value = 0
         return value
 
     def cooling(self, msg_geo, value):

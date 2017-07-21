@@ -62,7 +62,8 @@ class QtData(QtGui.QWidget):
             self.accepted.emit([])
         else:
             self.btnRecord.setText('Record Data')
-            self.txtOutput.textCursor().insertText('> stopped.\n')
+            self.txtOutput.textCursor().insertText(
+            '> stopped.\n')
         self.status = not self.status
 
     def callProgram(self):
