@@ -18,6 +18,7 @@ class NdAnalog():
         self.analog = Analog()
         self.analog.power_factor(power_min, power_max)
         self.line_power(laser_percent)
+        self.msg_value_ant = 0.0
 
         rospy.Subscriber("/control/power", MsgPower, self.cb_power)
         rospy.spin()
@@ -25,8 +26,12 @@ class NdAnalog():
     def cb_power(self, msg_power):
         self.analog.reg = 5000
         output = self.analog.factor * msg_power.value
-        rospy.loginfo("Power: %.2f, Output: %.2f", msg_power.value, output)
-        self.analog.output(output)
+        #rospy.loginfo("Power: %.2f, Output: %.2f", msg_power.value, output)
+        dif = abs (self.msg_value_ant - msg_power.value)
+        if dif > 20.0: 
+            self.analog.output(output)
+            print output
+            self.msg_value_ant = msg_power.value
 
     def line_power(self, laser_percent):
         self.analog.reg = 5002
