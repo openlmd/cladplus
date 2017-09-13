@@ -36,9 +36,9 @@ def thermal_colormap(levels=1024):
 LUT_IRON = thermal_colormap()
 
 
-class QtDisplay(QtGui.QWidget):
-    def __init__(self, parent=None, size=64):
-        super(QtDisplay, self).__init__(parent)
+class QtMultiDisplay(QtGui.QWidget):
+    def __init__(self, parent=None, size=64, topic='/tachyon/image'):
+        super(QtMultiDisplay, self).__init__(parent)
         self.parent = parent
         self.setMinimumSize(240, 240)
 
@@ -57,7 +57,7 @@ class QtDisplay(QtGui.QWidget):
         self.lblCamera.mousePressEvent = self.mousePressEvent
         layout.addWidget(self.lblCamera)
 
-        image_topic = rospy.get_param('~image', '/tachyon/image')
+        image_topic = rospy.get_param('~image', topic)
         rospy.Subscriber(image_topic, Image, self.cb_image, queue_size=1)
         self.bridge = CvBridge()
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     # img = cv2.imread('indice.jpeg')
     app = QtGui.QApplication(sys.argv)
-    qt_display = QtDisplay()
+    qt_display = QtMultiDisplay()
 
     timer = QtCore.QTimer()
     timer.timeout.connect(qt_display.timeoutRunning)

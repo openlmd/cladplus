@@ -4,9 +4,9 @@ from mashes_tachyon.msg import MsgCalibrate
 
 
 class Calibrate():
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, topic='tachyon/calibrate'):
         self.pub_calibrate = rospy.Publisher(
-            '/tachyon/calibrate', MsgCalibrate, queue_size=10)
+            topic, MsgCalibrate, queue_size=10)
         self.msg_calibrate = MsgCalibrate()
 
     def run(self):
