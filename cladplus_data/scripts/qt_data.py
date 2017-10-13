@@ -19,8 +19,7 @@ DIRDEST = 'data'
 
 TOPICS = ['/tachyon/image',
           '/tachyon/geometry',
-        #   '/control/power',
-          '/predict/power']
+          '/control/power']
 
 
 class QtData(QtGui.QWidget):

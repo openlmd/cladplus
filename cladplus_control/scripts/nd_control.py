@@ -121,7 +121,7 @@ class NdControl():
         elif self.mode == STEP:
             value = self.step(time)
         value = self.range(value)
-        value = self.cooling(msg_geo.minor_axis, value)
+        # value = self.cooling(msg_geo.minor_axis, value)
         self.msg_power.header.stamp = stamp
         self.msg_power.value = value
         self.msg_info.time = str(self.time_control)
@@ -155,11 +155,14 @@ class NdControl():
                     value = self.control.pid.update(minor_axis, time)
                     self.msg_start.control = True
             elif self.auto_mode is 1:
+                print 'track number', self.track_number
                 if self.track_number is 3:
                     self.auto_setpoint(minor_axis)
                 if self.track_number >= 4:
                     value = self.control.pid.update(minor_axis, time)
                     self.msg_start.control = True
+        if not self.status:
+            value = 200
         return value
 
     def auto_setpoint(self, minor_axis):

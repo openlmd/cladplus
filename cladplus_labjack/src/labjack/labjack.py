@@ -12,6 +12,7 @@ class LabJack():
         self.setDacCount = 0
         self.go = True
         self.reg = 5000
+        self.openu3()
 
     def load_config(self, filename):
         with open(filename, "r") as ymlfile:
@@ -106,13 +107,14 @@ if __name__ == '__main__':
     # The frequency of the sine wave, in Hz
     FREQUENCY = 10
 
-    dacs = LabJack()
+    dac = LabJack()
+    # dac.openu3()
 
     while(1):
-        dacs.output(1)
+        dac.output(1)
 
     #dacs.triangular(4)
 
     #dacs.singenerator(FREQUENCY, UPDATE_INTERVAL)
 
-    dacs.close()
+    dac.close()
