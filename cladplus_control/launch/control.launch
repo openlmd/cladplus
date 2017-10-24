@@ -8,9 +8,9 @@
     <arg name="gui" value="$(arg gui)" />
   </include>
 
-  <include file="$(find cladplus_labjack)/launch/labjack.launch" unless="$(arg sim)">
+  <!-- <include file="$(find cladplus_labjack)/launch/labjack.launch" unless="$(arg sim)">
     <arg name="gui" value="$(arg gui)"/>
-  </include>
+  </include> -->
 
   <node name="control" pkg="cladplus_control" type="nd_control.py">
     <param name="power_min" type="double" value="0.0" />
